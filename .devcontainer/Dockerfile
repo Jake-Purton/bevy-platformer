@@ -12,3 +12,5 @@ RUN echo 'git config core.hooksPath /workspace/.devcontainer/.githooks' >> ~/.ba
 ARG USERNAME=vscode
 RUN sudo mkdir -p /workspace/target && sudo chown $USERNAME:$USERNAME /workspace/target
 RUN sudo apt update && sudo apt install libasound2-dev -y
+RUN cargo install --locked trunk
+RUN rustup target add wasm32-unknown-unknown
