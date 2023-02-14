@@ -11,3 +11,4 @@ RUN echo 'git config core.hooksPath /workspace/.devcontainer/.githooks' >> ~/.ba
 # all the volumes configured in the docker-compose.yml
 ARG USERNAME=vscode
 RUN sudo mkdir -p /workspace/target && sudo chown $USERNAME:$USERNAME /workspace/target
+RUN sudo apt update && sudo apt install pkg-config && sudo apt-get install libudev-dev && sudo apt install libasound2-dev 
