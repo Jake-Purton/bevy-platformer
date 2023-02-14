@@ -106,24 +106,31 @@ fn player_movement(
         top_collision = true;
     }
 
+    // if top_collision {
+    //     player.velocity.y = 0.0;
+    //     player.can_jump = true;
+    //     transform.translation.x = target.x;
+    // } else if bottom_collision {
+    //     player.velocity.y = -player.velocity.y * 0.5;
+    //     transform.translation.x = target.x;
+    // }
+
+    if !side_collision {
+        transform.translation.x = target.x;
+    }
+
     if top_collision {
-        player.velocity.y = 0.0;
         player.can_jump = true;
-        transform.translation.x = target.x;
-    } else if bottom_collision {
-        player.velocity.y = -player.velocity.y * 0.5;
-        transform.translation.x = target.x;
-    } else if side_collision {
-        player.velocity.x = -player.velocity.x * 0.5;
-        transform.translation.y = target.y;
-        player.velocity.y -= 1000.0 * time_delta;
-    } else {
+        player.velocity.y = 0.0;
+    } else if !bottom_collision {
         // if not on the floor
 
         player.can_jump = false;
 
-        transform.translation = target;
+        transform.translation.y = target.y;
 
         player.velocity.y -= 1000.0 * time_delta;
-    };
+    } else {
+        player.velocity.y = 0.0;
+    }
 }

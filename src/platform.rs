@@ -39,4 +39,5 @@ macro_rules! create_platform {
 fn platform_system(mut commands: Commands) {
     create_platform!(commands, 0.0, -100.0, Vec2::new(100.0, 100.0));
     create_platform!(commands, 150.0, -200.0, Vec2::new(200.0, 100.0));
+    create_platform!(commands, -150.0, -250.0, Vec2::new(200.0, 100.0));
 }
