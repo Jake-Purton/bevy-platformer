@@ -11,7 +11,8 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_fella)
-            .add_system(player_movement);
+            .add_system(player_movement)
+            .add_system(respawn_system);
     }
 }
 
@@ -22,6 +23,18 @@ pub struct Player {
     jump_velocity: f32,
     can_jump: bool,
     size: Vec2,
+}
+
+fn respawn_system (
+    mut query: Query<&mut Transform, With<Player>>, 
+    keys: Res<Input<KeyCode>>
+) {
+
+    if keys.just_pressed(KeyCode::R) {
+
+        query.single_mut().translation = Vec3::new(0.0, 0.0, 10.0);
+
+    }
 }
 
 fn spawn_fella(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -77,6 +90,7 @@ fn player_movement(
     let mut top_collision = false;
     let mut bottom_collision = false;
     let mut side_collision = false;
+    let mut depth: Vec<(Collision, f32)> = Vec::new();
 
     for (wall_transform, wall) in wall_query.iter() {
         let collision = velocity_collision(
@@ -89,7 +103,7 @@ fn player_movement(
         );
 
         if let Some(collision) = collision {
-            println!("{}", collision.1);
+
 
             match collision.0 {
                 Collision::Left => side_collision = true,
@@ -98,39 +112,66 @@ fn player_movement(
                 Collision::Bottom => bottom_collision = true,
                 Collision::Inside => (),
             }
+
+            depth.push(collision);
         }
     }
 
     if target.y - player.size.y / 2.0 < FLOOR_HEIGHT {
-        player.can_jump = true;
         top_collision = true;
+        depth.push((Collision::Top, 0.0001 + FLOOR_HEIGHT + player.size.y / 2.0))
     }
-
-    // if top_collision {
-    //     player.velocity.y = 0.0;
-    //     player.can_jump = true;
-    //     transform.translation.x = target.x;
-    // } else if bottom_collision {
-    //     player.velocity.y = -player.velocity.y * 0.5;
-    //     transform.translation.x = target.x;
-    // }
 
     if !side_collision {
         transform.translation.x = target.x;
+    } else {
+
+        let mut new_x = 0.0;
+
+        for i in &depth {
+            if i.0 == Collision::Left || i.0 == Collision::Right {
+                new_x = i.1; 
+            }
+        }
+
+        transform.translation.x = new_x;
     }
 
     if top_collision {
+
+        // on the floor
         player.can_jump = true;
+        let mut new_y = 0.0;
         player.velocity.y = 0.0;
+
+        for i in &depth {
+            if i.0 == Collision::Top {
+                new_y = i.1; 
+            }
+        }
+
+        transform.translation.y = new_y
+
     } else if !bottom_collision {
-        // if not on the floor
 
+        // if not on the floor or on the celing
         player.can_jump = false;
-
         transform.translation.y = target.y;
-
         player.velocity.y -= 1000.0 * time_delta;
+
     } else {
+
         player.velocity.y = 0.0;
+        player.can_jump = false;
+        let mut new_y = 0.0;
+
+        for i in &depth {
+            if i.0 == Collision::Bottom {
+                new_y = i.1; 
+            }
+        }
+
+        transform.translation.y = new_y
+
     }
 }
