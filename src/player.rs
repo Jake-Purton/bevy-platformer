@@ -2,8 +2,7 @@ use ::bevy::prelude::*;
 use bevy::sprite::collide_aabb::Collision;
 
 use crate::{
-    collision::velocity_collision, platform::Wall, FELLA_SPRITE_SIZE, FLOOR_HEIGHT,
-    SPRITE_SCALE, GRAVITY_CONSTANT, GameTextures,
+    collision::velocity_collision, platform::Wall, FELLA_SPRITE_SIZE, SPRITE_SCALE, GRAVITY_CONSTANT, GameTextures,
 };
 
 pub struct PlayerPlugin;
@@ -115,11 +114,6 @@ fn player_movement(
 
             depth.push(collision);
         }
-    }
-
-    if target.y - player.size.y / 2.0 < FLOOR_HEIGHT {
-        top_collision = true;
-        depth.push((Collision::Top, 0.0001 + FLOOR_HEIGHT + player.size.y / 2.0))
     }
 
     if !side_collision {
