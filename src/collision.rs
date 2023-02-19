@@ -30,38 +30,25 @@ pub fn velocity_collision(
         && a_new_min.y < b_new_max.y
         && a_new_max.y > b_new_min.y
     {
-        if a_velocity.x - b_velocity.x < 0.0 
-            && a_new_min.x < b_new_max.x 
-            && a_min.x > b_max.x 
-        {
-
+        if a_velocity.x - b_velocity.x < 0.0 && a_new_min.x < b_new_max.x && a_min.x > b_max.x {
             Some((Collision::Right, 0.0001 + b_new_max.x + (a_size.x / 2.0)))
-
         } else if a_velocity.x - b_velocity.x > 0.0
             && a_new_max.x > b_new_min.x
             && a_max.x < b_min.x
         {
-
             Some((Collision::Left, -0.0001 + b_new_min.x - (a_size.x / 2.0)))
-
         } else if a_velocity.y - b_velocity.y < 0.0
             && a_new_min.y < b_new_max.y
             && a_min.y > b_max.y
         {
-
             Some((Collision::Top, 0.0001 + b_new_max.y + (a_size.y / 2.0)))
-
         } else if a_velocity.y - b_velocity.y > 0.0
             && a_new_max.y > b_new_min.y
             && a_max.y < b_min.y
         {
-
             Some((Collision::Bottom, -0.0001 + b_new_min.y - (a_size.y / 2.0)))
-
         } else {
-
             Some((Collision::Inside, 0.0))
-
         }
     } else {
         None

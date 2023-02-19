@@ -1,4 +1,4 @@
-use ::bevy::prelude::*;
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Wall {
@@ -14,11 +14,11 @@ impl Plugin for PlatformPlugin {
 }
 
 macro_rules! create_platform {
-    ($commands:expr , $x:expr, $y:expr, $size:expr) => {{
+    ($commands:expr, $x:expr, $y:expr, $size:expr) => {{
         $commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
-                    color: Color::rgb(0.0, 0.0, 0.0),
+                    color: Color::rgba(1.0, 1.0, 1.0, 1.0),
                     custom_size: Some($size),
                     ..default()
                 },
@@ -40,4 +40,6 @@ fn platform_system(mut commands: Commands) {
     create_platform!(commands, 0.0, -100.0, Vec2::new(100.0, 100.0));
     create_platform!(commands, 150.0, -200.0, Vec2::new(200.0, 100.0));
     create_platform!(commands, -150.0, -250.0, Vec2::new(200.0, 100.0));
+
+    // create_platform!(commands, 0.0, 0.0, Vec2::new(500.0, 500.0))
 }

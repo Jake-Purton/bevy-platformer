@@ -2,8 +2,8 @@ use ::bevy::prelude::*;
 use bevy::sprite::collide_aabb::Collision;
 
 use crate::{
-    collision::velocity_collision, platform::Wall, FELLA_SPRITE, FELLA_SPRITE_SIZE, FLOOR_HEIGHT,
-    SPRITE_SCALE,
+    collision::velocity_collision, platform::Wall, FELLA_SPRITE_SIZE, FLOOR_HEIGHT,
+    SPRITE_SCALE, GRAVITY_CONSTANT, GameTextures,
 };
 
 pub struct PlayerPlugin;
@@ -37,10 +37,10 @@ fn respawn_system (
     }
 }
 
-fn spawn_fella(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_fella(mut commands: Commands, game_textures: Res<GameTextures>) {
     commands
         .spawn(SpriteBundle {
-            texture: asset_server.load(FELLA_SPRITE),
+            texture: game_textures.player.clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 10.0),
                 scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 0.0),
@@ -49,9 +49,9 @@ fn spawn_fella(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .insert(Player {
-            run_speed: 500.0,
+            run_speed: 800.0,
             velocity: Vec2 { x: 0.0, y: 0.0 },
-            jump_velocity: 500.0,
+            jump_velocity: 1000.0,
             can_jump: true,
             size: FELLA_SPRITE_SIZE,
         });
@@ -157,7 +157,7 @@ fn player_movement(
         // if not on the floor or on the celing
         player.can_jump = false;
         transform.translation.y = target.y;
-        player.velocity.y -= 1000.0 * time_delta;
+        player.velocity.y += GRAVITY_CONSTANT * time_delta;
 
     } else {
 
