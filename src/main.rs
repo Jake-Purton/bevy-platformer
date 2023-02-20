@@ -2,6 +2,7 @@ mod collision;
 mod platform;
 mod player;
 
+use bevy_kira_audio::{prelude::*, Audio};
 use bevy::prelude::*;
 use platform::PlatformPlugin;
 use player::{PlayerPlugin, Player, player_movement};
@@ -31,6 +32,7 @@ fn main() {
         .add_system(camera_follow_player.after(player_movement))
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
+        .add_plugin(AudioPlugin)
         .run();
 }
 
@@ -42,12 +44,17 @@ struct GameTextures {
 #[derive(Component)]
 pub struct PlayerCamera;
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, audio: Res<Audio>) {
     commands.insert_resource(ClearColor(Color::rgb(1.0, 0.5, 0.0)));
     commands.spawn(Camera2dBundle::default()).insert(PlayerCamera);
     commands.insert_resource(GameTextures {
             player: asset_server.load(FELLA_SPRITE)
     });
+
+
+    let music = asset_server.load("chordy.wav");
+    audio.play(music).looped().with_volume(0.5);
+
 }
 
 fn camera_follow_player(

@@ -38,13 +38,12 @@ fn respawn_system (
 
 
 pub fn player_movement(
-    mut player_query: Query<(Entity, &mut Player, &mut Transform)>,
+    mut player_query: Query<(&mut Player, &mut Transform)>,
     wall_query: Query<(&Transform, &Wall), Without<Player>>,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
-    mut commands: Commands,
 ) {
-    let (entity, mut player, mut transform) = player_query.single_mut();
+    let (mut player, mut transform) = player_query.single_mut();
 
     let time_delta = time.delta_seconds();
 
@@ -109,7 +108,7 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Left || i.0.collision == Collision::Right {
                 if i.1 {
-                    commands.entity(entity).despawn()
+                    player.velocity.y = 1200.0;
                 }
                 new_x = i.0.new_position; 
                 break;
@@ -129,7 +128,7 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Top {
                 if i.1 {
-                    commands.entity(entity).despawn()
+                    player.velocity.y = 1200.0;
                 }
                 new_y = i.0.new_position; 
                 break;
@@ -154,7 +153,7 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Bottom {
                 if i.1 {
-                    commands.entity(entity).despawn()
+                    player.velocity.y = 1200.0;
                 }
                 new_y = i.0.new_position; 
                 break;

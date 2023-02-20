@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.9.0", features = ["dynamic"]}
 # bevy = "0.9.0"
+bevy_kira_audio = { version = "0.13", features = ["wav"]}
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
