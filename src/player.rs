@@ -2,7 +2,7 @@ use ::bevy::prelude::*;
 use bevy::sprite::collide_aabb::Collision;
 
 use crate::{
-    collision::velocity_collision, platform::Wall, GRAVITY_CONSTANT,
+    collision::{velocity_collision, VelocityCollision}, platform::Wall, GRAVITY_CONSTANT,
 };
 
 pub struct PlayerPlugin;
@@ -38,12 +38,13 @@ fn respawn_system (
 
 
 pub fn player_movement(
-    mut player_query: Query<(&mut Player, &mut Transform)>,
+    mut player_query: Query<(Entity, &mut Player, &mut Transform)>,
     wall_query: Query<(&Transform, &Wall), Without<Player>>,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
+    mut commands: Commands,
 ) {
-    let (mut player, mut transform) = player_query.single_mut();
+    let (entity, mut player, mut transform) = player_query.single_mut();
 
     let time_delta = time.delta_seconds();
 
@@ -70,7 +71,7 @@ pub fn player_movement(
     let mut top_collision = false;
     let mut bottom_collision = false;
     let mut side_collision = false;
-    let mut depth: Vec<(Collision, f32)> = Vec::new();
+    let mut depth: Vec<(VelocityCollision, bool)> = Vec::new();
 
     for (wall_transform, wall) in wall_query.iter() {
         let collision = velocity_collision(
@@ -82,10 +83,9 @@ pub fn player_movement(
             Vec2 { x: 0.0, y: 0.0 },
         );
 
-        if let Some(collision) = collision {
+        if let Some(velocity_collision) = collision {
 
-
-            match collision.0 {
+            match velocity_collision.collision {
                 Collision::Left => side_collision = true,
                 Collision::Right => side_collision = true,
                 Collision::Top => top_collision = true,
@@ -93,9 +93,12 @@ pub fn player_movement(
                 Collision::Inside => (),
             }
 
-            depth.push(collision);
+            depth.push((velocity_collision, wall.killer));
         }
     }
+
+    depth.sort_by(|a, b| a.0.depth.abs().partial_cmp(&b.0.depth.abs()).unwrap());
+    depth.reverse();
 
     if !side_collision {
         transform.translation.x = target.x;
@@ -104,8 +107,12 @@ pub fn player_movement(
         let mut new_x = 0.0;
 
         for i in &depth {
-            if i.0 == Collision::Left || i.0 == Collision::Right {
-                new_x = i.1; 
+            if i.0.collision == Collision::Left || i.0.collision == Collision::Right {
+                if i.1 {
+                    commands.entity(entity).despawn()
+                }
+                new_x = i.0.new_position; 
+                break;
             }
         }
 
@@ -120,8 +127,12 @@ pub fn player_movement(
         player.velocity.y = 0.0;
 
         for i in &depth {
-            if i.0 == Collision::Top {
-                new_y = i.1; 
+            if i.0.collision == Collision::Top {
+                if i.1 {
+                    commands.entity(entity).despawn()
+                }
+                new_y = i.0.new_position; 
+                break;
             }
         }
 
@@ -141,8 +152,12 @@ pub fn player_movement(
         let mut new_y = 0.0;
 
         for i in &depth {
-            if i.0 == Collision::Bottom {
-                new_y = i.1; 
+            if i.0.collision == Collision::Bottom {
+                if i.1 {
+                    commands.entity(entity).despawn()
+                }
+                new_y = i.0.new_position; 
+                break;
             }
         }
 

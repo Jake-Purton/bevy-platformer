@@ -7,6 +7,7 @@ use crate::{PlayerCamera, MAP, MAP_SCALE, GameTextures, SPRITE_SCALE, FELLA_SPRI
 #[derive(Component)]
 pub struct Wall {
     pub size: Vec2,
+    pub killer: bool,
 }
 
 #[derive(Component)]
@@ -46,7 +47,30 @@ macro_rules! create_wall {
                 },
                 ..Default::default()
             })
-            .insert(Wall { size: $size });
+            .insert(Wall { size: $size, killer: false });
+    }};
+}
+
+macro_rules! create_killer_wall {
+    ($commands:expr, $x:expr, $y:expr, $size:expr) => {{
+        $commands
+            .spawn(SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgba(1.0, 0.0, 0.0, 1.0),
+                    custom_size: Some($size),
+                    ..default()
+                },
+                transform: Transform {
+                    translation: Vec3 {
+                        x: $x,
+                        y: $y,
+                        z: 10.0,
+                    },
+                    ..default()
+                },
+                ..Default::default()
+            })
+            .insert(Wall { size: $size, killer: true });
     }};
 }
 
@@ -69,7 +93,7 @@ macro_rules! create_movable_wall {
                 },
                 ..Default::default()
             })
-            .insert(Wall { size: $size })
+            .insert(Wall { size: $size, killer: false })
             .insert(MovableWall);
     }};
 }
@@ -127,6 +151,13 @@ fn platform_from_map_system(mut commands: Commands, game_textures: Res<GameTextu
                         can_jump: true,
                         size: FELLA_SPRITE_SIZE,
                     });
+            } else if *val == 4 {
+                create_killer_wall!(
+                    commands, 
+                    (x as f32 * MAP_SCALE) - map[0].len() as f32 * MAP_SCALE / 2.0, 
+                    (y as f32 * MAP_SCALE) - map.len() as f32 * MAP_SCALE / 2.0, 
+                    Vec2::new(MAP_SCALE, MAP_SCALE - 10.0)
+                )
             }
         }
     }
