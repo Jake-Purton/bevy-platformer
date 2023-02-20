@@ -41,7 +41,7 @@ fn spawn_fella(mut commands: Commands, game_textures: Res<GameTextures>) {
         .spawn(SpriteBundle {
             texture: game_textures.player.clone(),
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 10.0),
+                translation: Vec3::new(0.0, 0.0, 20.0),
                 scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 0.0),
                 ..Default::default()
             },
@@ -56,7 +56,7 @@ fn spawn_fella(mut commands: Commands, game_textures: Res<GameTextures>) {
         });
 }
 
-fn player_movement(
+pub fn player_movement(
     mut player_query: Query<(&mut Player, &mut Transform)>,
     wall_query: Query<(&Transform, &Wall), Without<Player>>,
     keyboard: Res<Input<KeyCode>>,
