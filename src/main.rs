@@ -10,16 +10,7 @@ const FELLA_SPRITE: &str = "fella.png";
 const SPRITE_SCALE: f32 = 0.707106;
 const FELLA_SPRITE_SIZE: Vec2 = Vec2::new(64.0 * SPRITE_SCALE, 64.0 * SPRITE_SCALE);
 const GRAVITY_CONSTANT: f32 = -2800.0;
-const MAP: [[u16; 8]; 8] = [
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 1, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 1, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 1, 1],
-    [1, 0, 0, 0, 2, 2, 0, 1],
-    [1, 0, 0, 1, 0, 0, 0, 1],
-    [1, 0, 1, 0, 0, 0, 0, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1],
-];
+const MAP: &str = "assets/map.txt";
 const MAP_SCALE: f32 = 80.0;
 
 

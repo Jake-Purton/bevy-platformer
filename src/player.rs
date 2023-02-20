@@ -2,14 +2,14 @@ use ::bevy::prelude::*;
 use bevy::sprite::collide_aabb::Collision;
 
 use crate::{
-    collision::velocity_collision, platform::Wall, FELLA_SPRITE_SIZE, SPRITE_SCALE, GRAVITY_CONSTANT, GameTextures,
+    collision::velocity_collision, platform::Wall, GRAVITY_CONSTANT,
 };
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_fella)
+        app
             .add_system(player_movement)
             .add_system(respawn_system);
     }
@@ -17,11 +17,11 @@ impl Plugin for PlayerPlugin {
 
 #[derive(Component)]
 pub struct Player {
-    run_speed: f32,
-    velocity: Vec2,
-    jump_velocity: f32,
-    can_jump: bool,
-    size: Vec2,
+    pub run_speed: f32,
+    pub velocity: Vec2,
+    pub jump_velocity: f32,
+    pub can_jump: bool,
+    pub size: Vec2,
 }
 
 fn respawn_system (
@@ -36,25 +36,6 @@ fn respawn_system (
     }
 }
 
-fn spawn_fella(mut commands: Commands, game_textures: Res<GameTextures>) {
-    commands
-        .spawn(SpriteBundle {
-            texture: game_textures.player.clone(),
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 20.0),
-                scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 0.0),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Player {
-            run_speed: 800.0,
-            velocity: Vec2 { x: 0.0, y: 0.0 },
-            jump_velocity: 1000.0,
-            can_jump: true,
-            size: FELLA_SPRITE_SIZE,
-        });
-}
 
 pub fn player_movement(
     mut player_query: Query<(&mut Player, &mut Transform)>,

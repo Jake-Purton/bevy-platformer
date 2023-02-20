@@ -1,6 +1,8 @@
+use std::{fs::File, io::Read};
+
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
-use crate::{PlayerCamera, MAP, MAP_SCALE};
+use crate::{PlayerCamera, MAP, MAP_SCALE, GameTextures, SPRITE_SCALE, FELLA_SPRITE_SIZE, player::Player};
 
 #[derive(Component)]
 pub struct Wall {
@@ -72,28 +74,62 @@ macro_rules! create_movable_wall {
     }};
 }
 
-fn platform_from_map_system(mut commands: Commands) {
+fn platform_from_map_system(mut commands: Commands, game_textures: Res<GameTextures>) {
 
-    for (y, array) in MAP.iter().enumerate() {
+    let mut file = File::open(MAP).expect("File not found.");
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).unwrap();
+    let mut map: Vec<Vec<u8>> = Vec::new();
+
+    for line in contents.lines() {
+
+        map.push(line.split_whitespace().map(|a| a.parse::<u8>().unwrap()).collect());
+
+    }
+
+    map.reverse();
+
+    for (y, array) in map.iter().enumerate() {
         for (x, val) in array.iter().enumerate() {
             if *val == 1 {
                 create_wall!(
                     commands, 
-                    (x as f32 * MAP_SCALE) - MAP[0].len() as f32 * MAP_SCALE / 2.0, 
-                    (y as f32 * MAP_SCALE) - MAP.len() as f32 * MAP_SCALE / 2.0, 
+                    (x as f32 * MAP_SCALE) - map[0].len() as f32 * MAP_SCALE / 2.0, 
+                    (y as f32 * MAP_SCALE) - map.len() as f32 * MAP_SCALE / 2.0, 
                     Vec2::new(MAP_SCALE, MAP_SCALE)
                 )
             } else if *val == 2 {
                 create_movable_wall!(
                     commands, 
-                    (x as f32 * MAP_SCALE) - MAP[0].len() as f32 * MAP_SCALE / 2.0, 
-                    (y as f32 * MAP_SCALE) - MAP.len() as f32 * MAP_SCALE / 2.0, 
+                    (x as f32 * MAP_SCALE) - map[0].len() as f32 * MAP_SCALE / 2.0, 
+                    (y as f32 * MAP_SCALE) - map.len() as f32 * MAP_SCALE / 2.0, 
                     Vec2::new(MAP_SCALE, MAP_SCALE)
                 )
+            } else if *val == 3 {
+
+                let x = (x as f32 * MAP_SCALE) - map[0].len() as f32 * MAP_SCALE / 2.0;
+                let y = (y as f32 * MAP_SCALE) - map.len() as f32 * MAP_SCALE / 2.0;
+                
+                commands
+                    .spawn(SpriteBundle {
+                        texture: game_textures.player.clone(),
+                        transform: Transform {
+                            translation: Vec3::new(x, y, 20.0),
+                            scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 0.0),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    })
+                    .insert(Player {
+                        run_speed: 800.0,
+                        velocity: Vec2 { x: 0.0, y: 0.0 },
+                        jump_velocity: 1000.0,
+                        can_jump: true,
+                        size: FELLA_SPRITE_SIZE,
+                    });
             }
         }
     }
-    // create_platform!(commands, 0.0, 0.0, Vec2::new(500.0, 500.0))
 }
 
 fn movable_walls (
