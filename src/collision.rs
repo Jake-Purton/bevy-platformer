@@ -49,8 +49,8 @@ pub fn velocity_collision(
     {
         if a_velocity.x - b_velocity.x < 0.0 && a_new_min.x < b_new_max.x && a_min.x > b_max.x {
             Some(VelocityCollision::new(
-                Collision::Right, 
-                0.0001 + b_new_max.x + (a_size.x / 2.0), 
+                Collision::Right,
+                0.0001 + b_new_max.x + (a_size.x / 2.0),
                 b_new_max.x - a_new_min.x,
             ))
         } else if a_velocity.x - b_velocity.x > 0.0
@@ -58,8 +58,8 @@ pub fn velocity_collision(
             && a_max.x < b_min.x
         {
             Some(VelocityCollision::new(
-                Collision::Left, 
-                -0.0001 + b_new_min.x - (a_size.x / 2.0), 
+                Collision::Left,
+                -0.0001 + b_new_min.x - (a_size.x / 2.0),
                 -b_new_min.x + a_new_max.x,
             ))
         } else if a_velocity.y - b_velocity.y < 0.0
@@ -67,8 +67,8 @@ pub fn velocity_collision(
             && a_min.y > b_max.y
         {
             Some(VelocityCollision::new(
-                Collision::Top, 
-                0.0001 + b_new_max.y + (a_size.y / 2.0), 
+                Collision::Top,
+                0.0001 + b_new_max.y + (a_size.y / 2.0),
                 b_new_max.y - a_new_min.y,
             ))
         } else if a_velocity.y - b_velocity.y > 0.0
@@ -76,16 +76,12 @@ pub fn velocity_collision(
             && a_max.y < b_min.y
         {
             Some(VelocityCollision::new(
-                Collision::Bottom, 
-                -0.0001 + b_new_min.y - (a_size.y / 2.0), 
+                Collision::Bottom,
+                -0.0001 + b_new_min.y - (a_size.y / 2.0),
                 -b_new_min.y + a_new_max.y,
             ))
         } else {
-            Some(VelocityCollision::new(
-                Collision::Inside, 
-                0.0, 
-                0.0
-            ))
+            Some(VelocityCollision::new(Collision::Inside, 0.0, 0.0))
         }
     } else {
         None

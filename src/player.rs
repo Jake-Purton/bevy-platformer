@@ -2,16 +2,16 @@ use ::bevy::prelude::*;
 use bevy::sprite::collide_aabb::Collision;
 
 use crate::{
-    collision::{velocity_collision, VelocityCollision}, platform::Wall, GRAVITY_CONSTANT,
+    collision::{velocity_collision, VelocityCollision},
+    platform::Wall,
+    GRAVITY_CONSTANT,
 };
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_system(player_movement)
-            .add_system(respawn_system);
+        app.add_system(player_movement).add_system(respawn_system);
     }
 }
 
@@ -24,18 +24,11 @@ pub struct Player {
     pub size: Vec2,
 }
 
-fn respawn_system (
-    mut query: Query<&mut Transform, With<Player>>, 
-    keys: Res<Input<KeyCode>>
-) {
-
+fn respawn_system(mut query: Query<&mut Transform, With<Player>>, keys: Res<Input<KeyCode>>) {
     if keys.just_pressed(KeyCode::R) {
-
         query.single_mut().translation = Vec3::new(0.0, 0.0, 10.0);
-
     }
 }
-
 
 pub fn player_movement(
     mut player_query: Query<(&mut Player, &mut Transform)>,
@@ -83,7 +76,6 @@ pub fn player_movement(
         );
 
         if let Some(velocity_collision) = collision {
-
             match velocity_collision.collision {
                 Collision::Left => side_collision = true,
                 Collision::Right => side_collision = true,
@@ -102,7 +94,6 @@ pub fn player_movement(
     if !side_collision {
         transform.translation.x = target.x;
     } else {
-
         let mut new_x = 0.0;
 
         for i in &depth {
@@ -110,7 +101,7 @@ pub fn player_movement(
                 if i.1 {
                     player.velocity.y = 1200.0;
                 }
-                new_x = i.0.new_position; 
+                new_x = i.0.new_position;
                 break;
             }
         }
@@ -119,7 +110,6 @@ pub fn player_movement(
     }
 
     if top_collision {
-
         // on the floor
         player.can_jump = true;
         let mut new_y = 0.0;
@@ -130,22 +120,18 @@ pub fn player_movement(
                 if i.1 {
                     player.velocity.y = 1200.0;
                 }
-                new_y = i.0.new_position; 
+                new_y = i.0.new_position;
                 break;
             }
         }
 
         transform.translation.y = new_y
-
     } else if !bottom_collision {
-
         // if not on the floor or on the celing
         player.can_jump = false;
         transform.translation.y = target.y;
         player.velocity.y += GRAVITY_CONSTANT * time_delta;
-
     } else {
-
         player.velocity.y = 0.0;
         player.can_jump = false;
         let mut new_y = 0.0;
@@ -155,12 +141,11 @@ pub fn player_movement(
                 if i.1 {
                     player.velocity.y = 1200.0;
                 }
-                new_y = i.0.new_position; 
+                new_y = i.0.new_position;
                 break;
             }
         }
 
         transform.translation.y = new_y
-
     }
 }

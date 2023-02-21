@@ -2,10 +2,10 @@ mod collision;
 mod platform;
 mod player;
 
-use bevy_kira_audio::{prelude::*, Audio};
 use bevy::prelude::*;
+use bevy_kira_audio::{prelude::*, Audio};
 use platform::PlatformPlugin;
-use player::{PlayerPlugin, Player, player_movement};
+use player::{player_movement, Player, PlayerPlugin};
 
 const FELLA_SPRITE: &str = "fella.png";
 const SPRITE_SCALE: f32 = 0.707106;
@@ -13,7 +13,6 @@ const FELLA_SPRITE_SIZE: Vec2 = Vec2::new(64.0 * SPRITE_SCALE, 64.0 * SPRITE_SCA
 const GRAVITY_CONSTANT: f32 = -2800.0;
 const MAP: &str = "assets/map.txt";
 const MAP_SCALE: f32 = 80.0;
-
 
 fn main() {
     App::new()
@@ -30,6 +29,7 @@ fn main() {
         }))
         .add_startup_system_to_stage(StartupStage::PreStartup, setup)
         .add_system(camera_follow_player.after(player_movement))
+        .add_system(toggle_mute)
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)
@@ -46,24 +46,33 @@ pub struct PlayerCamera;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>, audio: Res<Audio>) {
     commands.insert_resource(ClearColor(Color::rgb(1.0, 0.5, 0.0)));
-    commands.spawn(Camera2dBundle::default()).insert(PlayerCamera);
+    commands
+        .spawn(Camera2dBundle::default())
+        .insert(PlayerCamera);
     commands.insert_resource(GameTextures {
-            player: asset_server.load(FELLA_SPRITE)
+        player: asset_server.load(FELLA_SPRITE),
     });
 
-
     let music = asset_server.load("chordy.wav");
-    audio.play(music).looped().with_volume(0.5);
+    audio.play(music).looped().with_volume(0.2);
+}
 
+fn toggle_mute (audio: Res<Audio>, keys: Res<Input<KeyCode>>) {
+
+    if keys.just_pressed(KeyCode::M) {
+        if audio.is_playing_sound() {
+            audio.pause();
+        } else {
+            audio.resume();
+        }
+    }
 }
 
 fn camera_follow_player(
-    mut camera: Query<&mut Transform, (With<PlayerCamera>, Without<Player>)>, 
+    mut camera: Query<&mut Transform, (With<PlayerCamera>, Without<Player>)>,
     player: Query<&Transform, With<Player>>,
 ) {
-
     let mut camera = camera.single_mut();
     let player = player.single();
-
     (camera.translation.x, camera.translation.y) = (player.translation.x, player.translation.y);
 }
