@@ -3,7 +3,7 @@ use std::{fs::File, io::Read};
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
 use crate::{
-    player::Player, GameTextures, PlayerCamera, FELLA_SPRITE_SIZE, MAP, MAP_SCALE, SPRITE_SCALE,
+    player::Player, GameTextures, PlayerCamera, FELLA_SPRITE_SIZE, MAP, MAP_SCALE, SPRITE_SCALE, GameState,
 };
 
 #[derive(Component)]
@@ -22,9 +22,16 @@ pub struct PlatformPlugin;
 
 impl Plugin for PlatformPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(platform_from_map_system)
-            .add_system(movable_walls)
-            .add_system(moving_wall);
+        app
+            .add_system_set(
+                SystemSet::on_enter(GameState::Gameplay)
+                    .with_system(platform_from_map_system)
+            )
+            .add_system_set(
+                SystemSet::on_update(GameState::Gameplay)
+                    .with_system(movable_walls)
+                    .with_system(moving_wall)
+            );
     }
 }
 

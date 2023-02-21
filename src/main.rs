@@ -14,8 +14,15 @@ const GRAVITY_CONSTANT: f32 = -2800.0;
 const MAP: &str = "assets/map.txt";
 const MAP_SCALE: f32 = 80.0;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
+pub enum GameState {
+    Gameplay,
+    End,
+}
+
 fn main() {
     App::new()
+        .add_state(GameState::Gameplay)
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {
@@ -28,8 +35,11 @@ fn main() {
             ..default()
         }))
         .add_startup_system_to_stage(StartupStage::PreStartup, setup)
-        .add_system(camera_follow_player.after(player_movement))
-        .add_system(toggle_mute)
+        .add_system_set(
+            SystemSet::on_update(GameState::Gameplay)
+                .with_system(camera_follow_player.after(player_movement))
+                .with_system(toggle_mute)
+        )
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)

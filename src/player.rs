@@ -4,14 +4,19 @@ use bevy::sprite::collide_aabb::Collision;
 use crate::{
     collision::{velocity_collision, VelocityCollision},
     platform::Wall,
-    GRAVITY_CONSTANT,
+    GRAVITY_CONSTANT, GameState,
 };
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(player_movement).add_system(respawn_system);
+        app
+            .add_system_set(
+                SystemSet::on_update(GameState::Gameplay)
+                    .with_system(player_movement)
+                    .with_system(respawn_system)
+            );
     }
 }
 
