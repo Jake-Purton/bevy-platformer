@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{GameState, despawn_everything};
+use crate::{GameState, startup_plugin::despawn_everything};
 
 pub struct EndPlugin;
 
@@ -24,7 +24,7 @@ impl Plugin for EndPlugin {
 }
 
 fn setup_end(mut commands: Commands) {
-        commands.insert_resource(ClearColor(Color::rgb(1.0, 1.0, 1.0)));
+        commands.insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)));
         commands.spawn(Camera2dBundle::default());
 }
 

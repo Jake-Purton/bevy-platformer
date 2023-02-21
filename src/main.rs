@@ -2,24 +2,32 @@ mod collision;
 mod platform;
 mod player;
 mod end;
+mod startup_plugin;
+mod next_level;
 
 use bevy::prelude::*;
-use bevy_kira_audio::{prelude::*, Audio};
+use bevy_kira_audio::prelude::*;
 use end::EndPlugin;
-use platform::{PlatformPlugin};
-use player::{player_movement, Player, PlayerPlugin};
+use next_level::NextLevelPlugin;
+use platform::PlatformPlugin;
+use player::PlayerPlugin;
+use startup_plugin::StartupPlugin;
 
-const FELLA_SPRITE: &str = "fella.png";
+const FELLA_SPRITE: &str = "images/fella.png";
 const SPRITE_SCALE: f32 = 0.707106;
 const FELLA_SPRITE_SIZE: Vec2 = Vec2::new(64.0 * SPRITE_SCALE, 64.0 * SPRITE_SCALE);
 const GRAVITY_CONSTANT: f32 = -2800.0;
-const MAP: &str = "assets/map.txt";
 const MAP_SCALE: f32 = 80.0;
+
+pub fn level_directory(level_number: u8) -> String {
+    format!("assets/levels/level-{}.txt", level_number)
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum GameState {
     Gameplay,
     End,
+    NextLevel,
 }
 
 fn main() {
@@ -36,75 +44,17 @@ fn main() {
             },
             ..default()
         }))
-        .add_startup_system_to_stage(StartupStage::PreStartup, pre_startup)
-        .add_system_set(
-            SystemSet::on_update(GameState::Gameplay)
-                .with_system(camera_follow_player.after(player_movement))
-                .with_system(toggle_mute)
-        )
-        .add_system_set(
-            SystemSet::on_exit(GameState::Gameplay)
-                .with_system(despawn_everything)
-        )        
-        .add_system_set(
-            SystemSet::on_enter(GameState::Gameplay)
-                .with_system(setup)
-        )
+        .insert_resource(CurrentLevel {level_number: 1})
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)
         .add_plugin(EndPlugin)
+        .add_plugin(StartupPlugin)
+        .add_plugin(NextLevelPlugin)
         .run();
 }
 
 #[derive(Resource)]
-struct GameTextures {
-    player: Handle<Image>,
-}
-
-#[derive(Component)]
-pub struct PlayerCamera;
-
-fn pre_startup(mut commands: Commands, asset_server: Res<AssetServer>, audio: Res<Audio>) {
-    commands.insert_resource(GameTextures {
-        player: asset_server.load(FELLA_SPRITE),
-    });
-
-    let music = asset_server.load("chordy.wav");
-    audio.play(music).looped().with_volume(0.2);
-    audio.pause();
-}
-
-fn setup(mut commands: Commands) {
-    commands.insert_resource(ClearColor(Color::rgb(1.0, 0.5, 0.0)));
-    commands
-        .spawn(Camera2dBundle::default())
-        .insert(PlayerCamera);
-}
-
-fn toggle_mute (audio: Res<Audio>, keys: Res<Input<KeyCode>>) {
-
-    if keys.just_pressed(KeyCode::M) {
-        if audio.is_playing_sound() {
-            audio.pause();
-        } else {
-            audio.resume();
-        }
-    }
-}
-
-fn camera_follow_player(
-    mut camera: Query<&mut Transform, (With<PlayerCamera>, Without<Player>)>,
-    player: Query<&Transform, With<Player>>,
-) {
-    let mut camera = camera.single_mut();
-    let player = player.single();
-    (camera.translation.x, camera.translation.y) = (player.translation.x, player.translation.y);
-}
-
-fn despawn_everything(query: Query<Entity>, mut commands: Commands) {
-
-    for entity in query.iter() {
-        commands.entity(entity).despawn();
-    }
+pub struct CurrentLevel {
+    level_number: u8,
 }

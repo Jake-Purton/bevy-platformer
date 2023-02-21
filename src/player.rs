@@ -98,7 +98,10 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Left || i.0.collision == Collision::Right {
                 if i.1 {
-                    game_state.set(GameState::End).unwrap();
+                    match game_state.set(GameState::End) {
+                        Ok(a) => a,
+                        Err(a) => println!("{a}"),
+                    }
                 }
                 new_x = i.0.new_position;
                 break;
@@ -117,7 +120,10 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Top {
                 if i.1 {
-                    game_state.set(GameState::End).unwrap();
+                    match game_state.set(GameState::End) {
+                        Ok(a) => a,
+                        Err(a) => println!("{a}"),
+                    }
                 }
                 new_y = i.0.new_position;
                 break;
@@ -138,7 +144,10 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Bottom {
                 if i.1 {
-                    game_state.set(GameState::End).unwrap();
+                    match game_state.set(GameState::End) {
+                        Ok(a) => a,
+                        Err(a) => println!("{a}"),
+                    }
                 }
                 new_y = i.0.new_position;
                 break;
