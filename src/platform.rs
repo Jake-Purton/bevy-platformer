@@ -66,7 +66,7 @@ macro_rules! create_killer_wall {
         $commands
             .spawn(SpriteBundle {
                 sprite: Sprite {
-                    color: Color::rgba(0.0, 1.0, 0.2, 1.0),
+                    color: Color::rgba(1.0, 0.0, 0., 1.0),
                     custom_size: Some($size),
                     ..default()
                 },

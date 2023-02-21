@@ -1,10 +1,12 @@
 mod collision;
 mod platform;
 mod player;
+mod end;
 
 use bevy::prelude::*;
 use bevy_kira_audio::{prelude::*, Audio};
-use platform::PlatformPlugin;
+use end::EndPlugin;
+use platform::{PlatformPlugin};
 use player::{player_movement, Player, PlayerPlugin};
 
 const FELLA_SPRITE: &str = "fella.png";
@@ -34,15 +36,24 @@ fn main() {
             },
             ..default()
         }))
-        .add_startup_system_to_stage(StartupStage::PreStartup, setup)
+        .add_startup_system_to_stage(StartupStage::PreStartup, pre_startup)
         .add_system_set(
             SystemSet::on_update(GameState::Gameplay)
                 .with_system(camera_follow_player.after(player_movement))
                 .with_system(toggle_mute)
         )
+        .add_system_set(
+            SystemSet::on_exit(GameState::Gameplay)
+                .with_system(despawn_everything)
+        )        
+        .add_system_set(
+            SystemSet::on_enter(GameState::Gameplay)
+                .with_system(setup)
+        )
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)
+        .add_plugin(EndPlugin)
         .run();
 }
 
@@ -54,17 +65,21 @@ struct GameTextures {
 #[derive(Component)]
 pub struct PlayerCamera;
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, audio: Res<Audio>) {
-    commands.insert_resource(ClearColor(Color::rgb(1.0, 0.5, 0.0)));
-    commands
-        .spawn(Camera2dBundle::default())
-        .insert(PlayerCamera);
+fn pre_startup(mut commands: Commands, asset_server: Res<AssetServer>, audio: Res<Audio>) {
     commands.insert_resource(GameTextures {
         player: asset_server.load(FELLA_SPRITE),
     });
 
     let music = asset_server.load("chordy.wav");
     audio.play(music).looped().with_volume(0.2);
+    audio.pause();
+}
+
+fn setup(mut commands: Commands) {
+    commands.insert_resource(ClearColor(Color::rgb(1.0, 0.5, 0.0)));
+    commands
+        .spawn(Camera2dBundle::default())
+        .insert(PlayerCamera);
 }
 
 fn toggle_mute (audio: Res<Audio>, keys: Res<Input<KeyCode>>) {
@@ -85,4 +100,11 @@ fn camera_follow_player(
     let mut camera = camera.single_mut();
     let player = player.single();
     (camera.translation.x, camera.translation.y) = (player.translation.x, player.translation.y);
+}
+
+fn despawn_everything(query: Query<Entity>, mut commands: Commands) {
+
+    for entity in query.iter() {
+        commands.entity(entity).despawn();
+    }
 }

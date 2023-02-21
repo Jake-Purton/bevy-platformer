@@ -15,7 +15,6 @@ impl Plugin for PlayerPlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(player_movement)
-                    .with_system(respawn_system)
             );
     }
 }
@@ -29,17 +28,12 @@ pub struct Player {
     pub size: Vec2,
 }
 
-fn respawn_system(mut query: Query<&mut Transform, With<Player>>, keys: Res<Input<KeyCode>>) {
-    if keys.just_pressed(KeyCode::R) {
-        query.single_mut().translation = Vec3::new(0.0, 0.0, 10.0);
-    }
-}
-
 pub fn player_movement(
     mut player_query: Query<(&mut Player, &mut Transform)>,
     wall_query: Query<(&Transform, &Wall), Without<Player>>,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
+    mut game_state: ResMut<State<GameState>>,
 ) {
     let (mut player, mut transform) = player_query.single_mut();
 
@@ -104,7 +98,7 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Left || i.0.collision == Collision::Right {
                 if i.1 {
-                    player.velocity.y = 1200.0;
+                    game_state.set(GameState::End).unwrap();
                 }
                 new_x = i.0.new_position;
                 break;
@@ -123,7 +117,7 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Top {
                 if i.1 {
-                    player.velocity.y = 1200.0;
+                    game_state.set(GameState::End).unwrap();
                 }
                 new_y = i.0.new_position;
                 break;
@@ -144,7 +138,7 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Bottom {
                 if i.1 {
-                    player.velocity.y = 1200.0;
+                    game_state.set(GameState::End).unwrap();
                 }
                 new_y = i.0.new_position;
                 break;
