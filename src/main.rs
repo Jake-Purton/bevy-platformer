@@ -1,19 +1,20 @@
 mod collision;
 mod platform;
 mod player;
-mod end;
+mod death;
 mod startup_plugin;
 mod next_level;
 
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
-use end::EndPlugin;
+use death::DeathPlugin;
 use next_level::NextLevelPlugin;
 use platform::PlatformPlugin;
 use player::PlayerPlugin;
 use startup_plugin::StartupPlugin;
 
 const FELLA_SPRITE: &str = "images/fella.png";
+const RESPAWN_PNG: &str = "death-messages/respawn.png";
 const SPRITE_SCALE: f32 = 0.707106;
 const FELLA_SPRITE_SIZE: Vec2 = Vec2::new(64.0 * SPRITE_SCALE, 64.0 * SPRITE_SCALE);
 const GRAVITY_CONSTANT: f32 = -2800.0;
@@ -26,7 +27,7 @@ pub fn level_directory(level_number: u8) -> String {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum GameState {
     Gameplay,
-    End,
+    Death,
     NextLevel,
 }
 
@@ -44,11 +45,11 @@ fn main() {
             },
             ..default()
         }))
-        .insert_resource(CurrentLevel {level_number: 1})
+        .insert_resource(CurrentLevel {level_number: 4})
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)
-        .add_plugin(EndPlugin)
+        .add_plugin(DeathPlugin)
         .add_plugin(StartupPlugin)
         .add_plugin(NextLevelPlugin)
         .run();

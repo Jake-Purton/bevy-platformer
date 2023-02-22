@@ -41,7 +41,7 @@ fn back_to_gameplay (
 
     timer.timer.tick(time.delta());
     let percent = timer.timer.percent_left();
-    commands.insert_resource(ClearColor(Color::rgb(percent, percent, percent)));
+    commands.insert_resource(ClearColor(Color::rgb(7.0, percent, percent)));
 
     if timer.timer.finished() {
         for entity in entities.iter() {

@@ -3,7 +3,7 @@ use bevy::sprite::collide_aabb::Collision;
 
 use crate::{
     collision::{velocity_collision, VelocityCollision},
-    platform::Wall,
+    platform::{Wall, LowestPoint},
     GRAVITY_CONSTANT, GameState,
 };
 
@@ -15,6 +15,7 @@ impl Plugin for PlayerPlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(player_movement)
+                    .with_system(player_death_fall_off_the_map)
             );
     }
 }
@@ -98,7 +99,7 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Left || i.0.collision == Collision::Right {
                 if i.1 {
-                    match game_state.set(GameState::End) {
+                    match game_state.set(GameState::Death) {
                         Ok(a) => a,
                         Err(a) => println!("{a}"),
                     }
@@ -120,7 +121,7 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Top {
                 if i.1 {
-                    match game_state.set(GameState::End) {
+                    match game_state.set(GameState::Death) {
                         Ok(a) => a,
                         Err(a) => println!("{a}"),
                     }
@@ -144,7 +145,7 @@ pub fn player_movement(
         for i in &depth {
             if i.0.collision == Collision::Bottom {
                 if i.1 {
-                    match game_state.set(GameState::End) {
+                    match game_state.set(GameState::Death) {
                         Ok(a) => a,
                         Err(a) => println!("{a}"),
                     }
@@ -155,5 +156,20 @@ pub fn player_movement(
         }
 
         transform.translation.y = new_y
+    }
+}
+
+fn player_death_fall_off_the_map (
+    player: Query<&Transform, With<Player>>,
+    lowest_point: Res<LowestPoint>,
+    mut game_state: ResMut<State<GameState>>,
+) {
+
+    let player = player.single();
+    if player.translation.y <= -lowest_point.point {
+        match game_state.set(GameState::Death) {
+            Ok(a) => a,
+            Err(a) => println!("{a}, player_fall_off_map"),
+        }
     }
 }

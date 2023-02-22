@@ -142,6 +142,11 @@ macro_rules! create_movable_wall {
     }};
 }
 
+#[derive(Resource)]
+pub struct LowestPoint {
+    pub point: f32,
+}
+
 fn platform_from_map_system(
     mut commands: Commands, 
     game_textures: Res<GameTextures>,
@@ -162,6 +167,7 @@ fn platform_from_map_system(
     }
 
     map.reverse();
+    commands.insert_resource(LowestPoint{ point: (map.len() as f32 * MAP_SCALE / 2.0) + MAP_SCALE + 100.0 });
 
     for (y, array) in map.iter().enumerate() {
         for (x, val) in array.iter().enumerate() {
