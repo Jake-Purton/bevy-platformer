@@ -1,6 +1,8 @@
+use std::fs::File;
+
 use bevy::prelude::*;
 
-use crate::GameState;
+use crate::{GameState, CurrentLevel, level_directory};
 
 #[derive(Resource)]
 pub struct LevelTimer {
@@ -37,6 +39,7 @@ fn back_to_gameplay (
     time: Res<Time>,
     entities: Query<Entity>,
     mut commands: Commands,
+    current_level: Res<CurrentLevel>,
 ) {
 
     timer.timer.tick(time.delta());
@@ -47,10 +50,23 @@ fn back_to_gameplay (
         for entity in entities.iter() {
             commands.entity(entity).despawn()
         }
-        match game_state.set(GameState::Gameplay) {
-            Ok(a) => a,
-            Err(a) => println!("{a}, (NextLevel to Gameplay)"),
+
+        match File::open(level_directory(current_level.level_number)) {
+            Ok(_) => {
+                match game_state.set(GameState::Gameplay) {
+                    Ok(a) => a,
+                    Err(a) => println!("{a}, (NextLevel to Gameplay)"),
+                }
+            },
+            Err(_) => {
+                match game_state.set(GameState::Win) {
+                    Ok(a) => a,
+                    Err(a) => println!("{a}, (NextLevel to Win)"),
+                }
+            },
         }
+        
+
     }
 
 }

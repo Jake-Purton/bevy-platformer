@@ -153,9 +153,11 @@ fn platform_from_map_system(
     current_level: Res<CurrentLevel>,
 ) {
 
-    let mut file = File::open(level_directory(current_level.level_number)).expect("File not found.");
+    let mut file = File::open(level_directory(current_level.level_number)).unwrap();
+
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
+
     let mut map: Vec<Vec<u8>> = Vec::new();
 
     for line in contents.lines() {
@@ -222,7 +224,7 @@ fn platform_from_map_system(
                 )
             }
         }
-    }
+    }    
 }
 
 fn movable_walls(
@@ -302,7 +304,10 @@ fn next_level_system (
             .is_some()
         {
             level.level_number += 1;
-            game_state.set(GameState::NextLevel).unwrap();
+            match game_state.set(GameState::NextLevel) {
+                Ok(a) => a,
+                Err(a) => println!("{a}, (gameplay to next level)"),
+            }
         }
     }
 }

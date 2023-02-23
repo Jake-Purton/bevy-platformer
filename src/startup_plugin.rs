@@ -1,12 +1,15 @@
 use bevy_kira_audio::{prelude::*, Audio};
 use bevy::prelude::*;
-
-use crate::{GameState, player::{player_movement, Player}, FELLA_SPRITE, RESPAWN_PNG};
+use crate::{GameState, player::{player_movement, Player}};
 
 #[derive(Resource)]
 pub struct GameTextures {
     pub player: Handle<Image>,
     pub r_to_respawn: Handle<Image>,
+    pub you_win: Handle<Image>,
+    pub menu: Handle<Image>,
+    pub exit: Handle<Image>,
+    pub play: Handle<Image>,
 }
 
 #[derive(Component)]
@@ -36,11 +39,15 @@ impl Plugin for StartupPlugin {
 
 fn pre_startup(mut commands: Commands, asset_server: Res<AssetServer>, audio: Res<Audio>) {
     commands.insert_resource(GameTextures {
-        player: asset_server.load(FELLA_SPRITE),
-        r_to_respawn: asset_server.load(RESPAWN_PNG),
+        player: asset_server.load("images/fella.png"),
+        r_to_respawn: asset_server.load("death-messages/respawn.png"),
+        you_win: asset_server.load("death-messages/you-win.png"),
+        menu: asset_server.load("death-messages/menu.png"),
+        exit: asset_server.load("death-messages/exit.png"),
+        play: asset_server.load("death-messages/play.png"),
     });
 
-    let music = asset_server.load("music/chordy.wav");
+    let music = asset_server.load("music/new_bossa.wav");
     audio.play(music).looped().with_volume(0.2);
     audio.pause();
 }

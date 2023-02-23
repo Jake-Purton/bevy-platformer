@@ -4,17 +4,19 @@ mod player;
 mod death;
 mod startup_plugin;
 mod next_level;
+mod win;
+mod main_menu;
 
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
 use death::DeathPlugin;
+use main_menu::MenuPlugin;
 use next_level::NextLevelPlugin;
 use platform::PlatformPlugin;
 use player::PlayerPlugin;
 use startup_plugin::StartupPlugin;
+use win::WinPlugin;
 
-const FELLA_SPRITE: &str = "images/fella.png";
-const RESPAWN_PNG: &str = "death-messages/respawn.png";
 const SPRITE_SCALE: f32 = 0.707106;
 const FELLA_SPRITE_SIZE: Vec2 = Vec2::new(64.0 * SPRITE_SCALE, 64.0 * SPRITE_SCALE);
 const GRAVITY_CONSTANT: f32 = -2800.0;
@@ -29,11 +31,13 @@ pub enum GameState {
     Gameplay,
     Death,
     NextLevel,
+    Win,
+    Menu,
 }
 
 fn main() {
     App::new()
-        .add_state(GameState::Gameplay)
+        .add_state(GameState::Menu)
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {
@@ -52,6 +56,8 @@ fn main() {
         .add_plugin(DeathPlugin)
         .add_plugin(StartupPlugin)
         .add_plugin(NextLevelPlugin)
+        .add_plugin(WinPlugin)
+        .add_plugin(MenuPlugin)
         .run();
 }
 
