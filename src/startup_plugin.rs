@@ -24,7 +24,6 @@ impl Plugin for StartupPlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(camera_follow_player.after(player_movement))
-                    .with_system(toggle_mute)
             )
             .add_system_set(
                 SystemSet::on_exit(GameState::Gameplay)
@@ -33,7 +32,8 @@ impl Plugin for StartupPlugin {
             .add_system_set(
                 SystemSet::on_enter(GameState::Gameplay)
                     .with_system(setup)
-            );
+            )
+            .add_system(toggle_mute);
     }
 }
 
