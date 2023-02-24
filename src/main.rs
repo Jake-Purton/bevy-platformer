@@ -6,11 +6,13 @@ mod startup_plugin;
 mod next_level;
 mod win;
 mod main_menu;
+mod moving_block;
 
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
 use death::DeathPlugin;
 use main_menu::MenuPlugin;
+use moving_block::MovingBlockPlugin;
 use next_level::NextLevelPlugin;
 use platform::PlatformPlugin;
 use player::PlayerPlugin;
@@ -49,7 +51,7 @@ fn main() {
             },
             ..default()
         }))
-        .insert_resource(CurrentLevel {level_number: 1})
+        .insert_resource(CurrentLevel {level_number: 6})
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)
@@ -58,6 +60,7 @@ fn main() {
         .add_plugin(NextLevelPlugin)
         .add_plugin(WinPlugin)
         .add_plugin(MenuPlugin)
+        .add_plugin(MovingBlockPlugin)
         .run();
 }
 

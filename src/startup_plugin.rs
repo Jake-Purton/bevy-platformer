@@ -37,6 +37,28 @@ impl Plugin for StartupPlugin {
     }
 }
 
+macro_rules! create_wall {
+    ($commands:expr, $x:expr, $y:expr, $size:expr) => {{
+        $commands
+            .spawn(SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgba(1.0, 1.0, 1.0, 1.0),
+                    custom_size: Some($size),
+                    ..default()
+                },
+                transform: Transform {
+                    translation: Vec3 {
+                        x: $x,
+                        y: $y,
+                        z: 10.0,
+                    },
+                    ..default()
+                },
+                ..Default::default()
+            });
+    }};
+}
+
 fn pre_startup(mut commands: Commands, asset_server: Res<AssetServer>, audio: Res<Audio>) {
     commands.insert_resource(GameTextures {
         player: asset_server.load("images/fella.png"),
@@ -57,6 +79,13 @@ fn setup(mut commands: Commands) {
     commands
         .spawn(Camera2dBundle::default())
         .insert(PlayerCamera);
+
+    create_wall!(
+        commands,
+        0.0,
+        0.0,
+        Vec2::new(80.0, 80.0)
+    )
 }
 
 fn toggle_mute (audio: Res<Audio>, keys: Res<Input<KeyCode>>) {
