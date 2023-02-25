@@ -131,7 +131,7 @@ fn moving_wall(
                     let mut new_y = 0.0;
             
                     for i in &depth {
-                        if i.collision == Collision::Top {
+                        if i.collision == Collision::Top || i.collision == Collision::Bottom {
                             new_y = i.new_position;
                             break;
                         }
@@ -139,6 +139,8 @@ fn moving_wall(
             
                     block_transform.translation.y = new_y
 
+                } else {
+                    block_transform.translation.y = pos.y;
                 }
             }
         } else {
