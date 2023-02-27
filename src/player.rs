@@ -91,6 +91,8 @@ pub fn player_movement(
     depth.sort_by(|a, b| a.0.depth.abs().partial_cmp(&b.0.depth.abs()).unwrap());
     depth.reverse();
 
+    // println!("{:?}", depth);
+
     if !side_collision {
         transform.translation.x = target.x;
     } else {

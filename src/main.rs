@@ -51,7 +51,7 @@ fn main() {
             },
             ..default()
         }))
-        .insert_resource(CurrentLevel {level_number: 5})
+        .insert_resource(CurrentLevel {level_number: 6})
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)
