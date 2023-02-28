@@ -1,8 +1,8 @@
 use ::bevy::prelude::*;
-use bevy::sprite::collide_aabb::Collision;
+
 
 use crate::{
-    collision::{velocity_collision, VelocityCollision},
+    collision::{velocity_collision, VelocityCollision, BetterCollision},
     platform::{Wall, LowestPoint},
     GRAVITY_CONSTANT, GameState,
 };
@@ -77,11 +77,11 @@ pub fn player_movement(
 
         if let Some(velocity_collision) = collision {
             match velocity_collision.collision {
-                Collision::Left => side_collision = true,
-                Collision::Right => side_collision = true,
-                Collision::Top => top_collision = true,
-                Collision::Bottom => bottom_collision = true,
-                Collision::Inside => (),
+                BetterCollision::Left => side_collision = true,
+                BetterCollision::Right => side_collision = true,
+                BetterCollision::Top => top_collision = true,
+                BetterCollision::Bottom => bottom_collision = true,
+                _ => (),
             }
 
             depth.push((velocity_collision, wall.killer));
@@ -99,7 +99,7 @@ pub fn player_movement(
         let mut new_x = 0.0;
 
         for i in &depth {
-            if i.0.collision == Collision::Left || i.0.collision == Collision::Right {
+            if i.0.collision == BetterCollision::Left || i.0.collision == BetterCollision::Right {
                 if i.1 {
                     match game_state.set(GameState::Death) {
                         Ok(a) => a,
@@ -121,7 +121,7 @@ pub fn player_movement(
         player.velocity.y = 0.0;
 
         for i in &depth {
-            if i.0.collision == Collision::Top {
+            if i.0.collision == BetterCollision::Top {
                 if i.1 {
                     match game_state.set(GameState::Death) {
                         Ok(a) => a,
@@ -145,7 +145,7 @@ pub fn player_movement(
         let mut new_y = 0.0;
 
         for i in &depth {
-            if i.0.collision == Collision::Bottom {
+            if i.0.collision == BetterCollision::Bottom {
                 if i.1 {
                     match game_state.set(GameState::Death) {
                         Ok(a) => a,

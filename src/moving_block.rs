@@ -1,6 +1,6 @@
-use bevy::{prelude::*, sprite::collide_aabb::{collide, Collision}};
+use bevy::{prelude::*, sprite::collide_aabb::{collide}};
 
-use crate::{GameState, platform::Wall, startup_plugin::PlayerCamera, collision::{velocity_collision, VelocityCollision}};
+use crate::{GameState, platform::Wall, startup_plugin::PlayerCamera, collision::{velocity_collision, VelocityCollision, BetterCollision}};
 
 pub struct MovingBlockPlugin;
 
@@ -97,11 +97,11 @@ fn moving_wall(
             
                     if let Some(velocity_collision) = collision {
                         match velocity_collision.collision {
-                            Collision::Left => side_collision = true,
-                            Collision::Right => side_collision = true,
-                            Collision::Top => top_collision = true,
-                            Collision::Bottom => bottom_collision = true,
-                            Collision::Inside => (),
+                            BetterCollision::Left => side_collision = true,
+                            BetterCollision::Right => side_collision = true,
+                            BetterCollision::Top => top_collision = true,
+                            BetterCollision::Bottom => bottom_collision = true,
+                            _ => (),
                         }
             
                         depth.push(velocity_collision);
@@ -117,7 +117,7 @@ fn moving_wall(
                     let mut new_x = 0.0;
             
                     for i in &depth {
-                        if i.collision == Collision::Left || i.collision == Collision::Right {
+                        if i.collision == BetterCollision::Left || i.collision == BetterCollision::Right {
                             new_x = i.new_position;
                             break;
                         }
@@ -131,7 +131,7 @@ fn moving_wall(
                     let mut new_y = 0.0;
             
                     for i in &depth {
-                        if i.collision == Collision::Top || i.collision == Collision::Bottom {
+                        if i.collision == BetterCollision::Top || i.collision == BetterCollision::Bottom {
                             new_y = i.new_position;
                             break;
                         }
