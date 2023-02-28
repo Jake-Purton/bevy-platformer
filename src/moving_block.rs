@@ -97,14 +97,44 @@ fn moving_wall(
             
                     if let Some(velocity_collision) = collision {
                         match velocity_collision.collision {
-                            BetterCollision::Left => side_collision = true,
-                            BetterCollision::Right => side_collision = true,
-                            BetterCollision::Top => top_collision = true,
-                            BetterCollision::Bottom => bottom_collision = true,
-                            _ => (),
+                            BetterCollision::Left => {
+                                side_collision = true;
+                                depth.push(velocity_collision);
+                            }
+                            BetterCollision::Right => {
+                                side_collision = true;
+                                depth.push(velocity_collision);
+                            },
+                            BetterCollision::Top => {
+                                top_collision = true;
+                                depth.push(velocity_collision);
+                            }
+                            BetterCollision::Bottom => {
+                                bottom_collision = true;
+                                depth.push(velocity_collision);
+                            }
+                            BetterCollision::TopLeft => {
+                                // side_collision = true; 
+                                top_collision = true;
+                                depth.push(velocity_collision);
+                            }
+                            BetterCollision::TopRight => {
+                                // side_collision = true; 
+                                top_collision = true;
+                                depth.push(velocity_collision);
+                            }
+                            BetterCollision::BottomRight => {
+                                // side_collision = true; 
+                                bottom_collision = true;
+                                depth.push(velocity_collision);
+                            }
+                            BetterCollision::BottomLeft => {
+                                // side_collision = true; 
+                                bottom_collision = true;
+                                depth.push(velocity_collision);
+                            }
                         }
             
-                        depth.push(velocity_collision);
                     }
                 }
 
