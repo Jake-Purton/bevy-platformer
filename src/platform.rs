@@ -1,4 +1,4 @@
-use crate::moving_block::MovableWall;
+use crate::{moving_block::MovableWall, PLAYER_RUN_SPEED, PLAYER_JUMP_VELOCITY};
 use std::{fs::File, io::Read};
 
 use bevy::{prelude::*, sprite::collide_aabb::collide};
@@ -195,9 +195,9 @@ fn platform_from_map_system(
                         ..Default::default()
                     })
                     .insert(Player {
-                        run_speed: 800.0,
+                        run_speed: PLAYER_RUN_SPEED,
                         velocity: Vec2 { x: 0.0, y: 0.0 },
-                        jump_velocity: 1000.0,
+                        jump_velocity: PLAYER_JUMP_VELOCITY,
                         can_jump: true,
                         size: FELLA_SPRITE_SIZE,
                     });
