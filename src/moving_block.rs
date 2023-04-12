@@ -82,7 +82,7 @@ fn moving_wall(
                     block_transform.translation.z,
                 );
                 let velocity = Vec2::new(pos.x - block_transform.translation.x, pos.y - block_transform.translation.y);
-                vel.linvel += velocity;
+                vel.linvel = (velocity + vel.linvel) * 0.8;
             }   
         } else {
             for (_, entity, _) in moving_walls.iter() {
