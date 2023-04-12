@@ -1,9 +1,10 @@
 use ::bevy::prelude::*;
+use bevy::sprite::collide_aabb::collide;
 use bevy_rapier2d::prelude::{KinematicCharacterController, KinematicCharacterControllerOutput};
 
 
 use crate::{
-    platform::{LowestPoint},
+    platform::{LowestPoint, KillerWall},
     GRAVITY_CONSTANT, GameState,
 };
 
@@ -16,6 +17,7 @@ impl Plugin for PlayerPlugin {
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(rapier_player_movement)
                     .with_system(player_death_fall_off_the_map)
+                    .with_system(killer_wall)
             );
     }
 }
@@ -83,6 +85,24 @@ fn player_death_fall_off_the_map (
         match game_state.set(GameState::Death) {
             Ok(a) => a,
             Err(a) => println!("{a}, player_fall_off_map"),
+        }
+    }
+}
+
+fn killer_wall (
+    walls: Query<(&KillerWall, &Transform)>,
+    player: Query<(&Transform, &Player)>,
+    mut game_state: ResMut<State<GameState>>,
+) {
+
+    let player = player.single();
+
+    for wall in walls.iter() {
+        if collide(wall.1.translation, wall.0.size + Vec2::ONE, player.0.translation, player.1.size).is_some() {
+            match game_state.set(GameState::Death) {
+                Ok(a) => a,
+                Err(a) => println!("{a}, player_dead_to_killer_walls"),
+            }
         }
     }
 }

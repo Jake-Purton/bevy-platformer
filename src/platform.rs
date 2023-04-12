@@ -9,9 +9,8 @@ use crate::{
 };
 
 #[derive(Component)]
-pub struct Wall {
-    pub size: Vec2,
-    pub killer: bool,
+pub struct KillerWall {
+    pub size: Vec2
 }
 
 #[derive(Component)]
@@ -70,7 +69,11 @@ macro_rules! create_level_end {
                     ..default()
                 },
                 ..Default::default()
-            }).insert(Goal {size: $size});
+            })
+            .insert(Goal {size: $size})
+            .insert(RigidBody::Fixed)
+            .insert(TransformBundle::from(Transform::from_xyz($x, $y, 10.0)))
+            .insert(Collider::cuboid($size.x / 2.0, $size.y / 2.0));
     }}
 }
 
@@ -93,10 +96,12 @@ macro_rules! create_killer_wall {
                 },
                 ..Default::default()
             })
-            .insert(Wall {
-                size: $size,
-                killer: true,
-            });
+            .insert(KillerWall {
+                size: $size
+            })
+            .insert(RigidBody::Fixed)
+            .insert(TransformBundle::from(Transform::from_xyz($x, $y, 10.0)))
+            .insert(Collider::cuboid($size.x / 2.0, $size.y / 2.0));
     }};
 }
 
@@ -119,11 +124,13 @@ macro_rules! create_movable_wall {
                 },
                 ..Default::default()
             })
-            .insert(Wall {
-                size: $size,
-                killer: false,
+            .insert(MovableWall{
+                size: $size
             })
-            .insert(MovableWall);
+            .insert(RigidBody::Dynamic)
+            .insert(TransformBundle::from(Transform::from_xyz($x, $y, 10.0)))
+            .insert(Collider::cuboid($size.x / 2.0, $size.y / 2.0))
+            .insert(Velocity::default());
     }};
 }
 
@@ -227,7 +234,8 @@ fn next_level_system (
             player_transform.translation, 
             player.size, 
             goal_transform.translation, 
-            goal.size)
+            goal.size + Vec2::ONE
+        )
             .is_some()
         {
             level.level_number += 1;

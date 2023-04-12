@@ -1,7 +1,7 @@
 use bevy_kira_audio::{prelude::*, Audio};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::RapierConfiguration;
-use crate::{GameState, player::{rapier_player_movement, Player}};
+use crate::{GameState, player::{rapier_player_movement, Player}, GRAVITY_CONSTANT};
 
 #[derive(Resource)]
 pub struct GameTextures {
@@ -57,7 +57,7 @@ fn pre_startup(
     audio.play(music).looped().with_volume(0.2);
     audio.pause();
 
-    rapier_config.gravity = Vec2::ZERO;
+    rapier_config.gravity = GRAVITY_CONSTANT;
 }
 
 fn setup(mut commands: Commands) {

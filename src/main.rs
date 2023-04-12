@@ -1,4 +1,3 @@
-mod collision;
 mod platform;
 mod player;
 mod death;
@@ -56,7 +55,7 @@ fn main() {
             },
             ..default()
         }))
-        .insert_resource(CurrentLevel {level_number: 1})
+        .insert_resource(CurrentLevel {level_number: 3})
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)
