@@ -1,9 +1,9 @@
 use ::bevy::prelude::*;
+use bevy_rapier2d::prelude::{KinematicCharacterController, KinematicCharacterControllerOutput};
 
 
 use crate::{
-    collision::{velocity_collision, VelocityCollision, BetterCollision},
-    platform::{Wall, LowestPoint},
+    platform::{LowestPoint},
     GRAVITY_CONSTANT, GameState,
 };
 
@@ -14,7 +14,7 @@ impl Plugin for PlayerPlugin {
         app
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
-                    .with_system(player_movement)
+                    .with_system(rapier_player_movement)
                     .with_system(player_death_fall_off_the_map)
             );
     }
@@ -25,139 +25,50 @@ pub struct Player {
     pub run_speed: f32,
     pub velocity: Vec2,
     pub jump_velocity: f32,
-    pub can_jump: bool,
     pub size: Vec2,
 }
 
-pub fn player_movement(
-    mut player_query: Query<(&mut Player, &mut Transform)>,
-    wall_query: Query<(&Transform, &Wall), Without<Player>>,
-    keyboard: Res<Input<KeyCode>>,
+pub fn rapier_player_movement (
+    mut controllers: Query<(&mut KinematicCharacterController, &mut Player, &KinematicCharacterControllerOutput)>,
+    keys: Res<Input<KeyCode>>,
     time: Res<Time>,
-    mut game_state: ResMut<State<GameState>>,
 ) {
-    let (mut player, mut transform) = player_query.single_mut();
+    for (mut controller, mut player, output) in controllers.iter_mut() {
 
-    let time_delta = time.delta_seconds();
+        let delta_s = time.delta_seconds();
+        let mut movement = Vec2::new(0.0, 0.0);
 
-    if keyboard.pressed(KeyCode::Space) && player.can_jump {
-        player.velocity.y += player.jump_velocity;
-    }
+        if keys.pressed(KeyCode::D) {
+            movement += Vec2::new(player.run_speed, 0.0);
+        }        
+        if keys.pressed(KeyCode::A) {
+            movement += Vec2::new(-player.run_speed, 0.0);
+        }        
 
-    let mut delta_x = 0.0;
-
-    if keyboard.pressed(KeyCode::D) {
-        delta_x += player.run_speed * time_delta;
-    }
-
-    if keyboard.pressed(KeyCode::A) {
-        delta_x -= player.run_speed * time_delta;
-    }
-
-    let y_movement = player.velocity.y * time_delta;
-    let x_movement = player.velocity.x * time_delta + delta_x;
-    let target = transform.translation + Vec3::new(x_movement, y_movement, 0.0);
-
-    // calculate y collisions / borders
-
-    let mut top_collision = false;
-    let mut bottom_collision = false;
-    let mut side_collision = false;
-    let mut depth: Vec<(VelocityCollision, bool)> = Vec::new();
-
-    for (wall_transform, wall) in wall_query.iter() {
-        let collision = velocity_collision(
-            transform.translation,
-            player.size,
-            Vec2::new(x_movement, y_movement),
-            wall_transform.translation,
-            wall.size,
-            Vec2 { x: 0.0, y: 0.0 },
-        );
-
-        if let Some(velocity_collision) = collision {
-            match velocity_collision.collision {
-                BetterCollision::Left => side_collision = true,
-                BetterCollision::Right => side_collision = true,
-                BetterCollision::Top => top_collision = true,
-                BetterCollision::Bottom => bottom_collision = true,
-                _ => (),
-            }
-
-            depth.push((velocity_collision, wall.killer));
-        }
-    }
-
-    depth.sort_by(|a, b| a.0.depth.abs().partial_cmp(&b.0.depth.abs()).unwrap());
-    depth.reverse();
-
-    // println!("{:?}", depth);
-
-    if !side_collision {
-        transform.translation.x = target.x;
-    } else {
-        let mut new_x = 0.0;
-
-        for i in &depth {
-            if i.0.collision == BetterCollision::Left || i.0.collision == BetterCollision::Right {
-                if i.1 {
-                    match game_state.set(GameState::Death) {
-                        Ok(a) => a,
-                        Err(a) => println!("{a}"),
-                    }
-                }
-                new_x = i.0.new_position;
-                break;
-            }
+        if keys.pressed(KeyCode::Space) && output.grounded {
+            player.velocity.y = player.jump_velocity;
         }
 
-        transform.translation.x = new_x;
-    }
-
-    if top_collision {
-        // on the floor
-        player.can_jump = true;
-        let mut new_y = 0.0;
-        player.velocity.y = 0.0;
-
-        for i in &depth {
-            if i.0.collision == BetterCollision::Top {
-                if i.1 {
-                    match game_state.set(GameState::Death) {
-                        Ok(a) => a,
-                        Err(a) => println!("{a}"),
-                    }
-                }
-                new_y = i.0.new_position;
-                break;
-            }
+        if !output.grounded {
+            player.velocity += GRAVITY_CONSTANT * delta_s;
         }
 
-        transform.translation.y = new_y
-    } else if !bottom_collision {
-        // if not on the floor or on the celing
-        player.can_jump = false;
-        transform.translation.y = target.y;
-        player.velocity.y += GRAVITY_CONSTANT * time_delta;
-    } else {
-        player.velocity.y = 0.0;
-        player.can_jump = false;
-        let mut new_y = 0.0;
+        let mut x = player.velocity.x * delta_s;
+        let mut y = player.velocity.y * delta_s;
 
-        for i in &depth {
-            if i.0.collision == BetterCollision::Bottom {
-                if i.1 {
-                    match game_state.set(GameState::Death) {
-                        Ok(a) => a,
-                        Err(a) => println!("{a}"),
-                    }
-                }
-                new_y = i.0.new_position;
-                break;
-            }
+        if player.velocity.x.abs() - x.abs() <= 0.0 {
+            x = player.velocity.x
         }
 
-        transform.translation.y = new_y
+        if player.velocity.y.abs() - y.abs() <= 0.0 {
+            y = player.velocity.y
+        }
+
+        let xy = Vec2::new(x, y);
+
+        player.velocity -= xy;
+
+        controller.translation = Some((movement) * delta_s + xy);
     }
 }
 

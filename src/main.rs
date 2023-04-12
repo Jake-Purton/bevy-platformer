@@ -7,9 +7,9 @@ mod next_level;
 mod win;
 mod main_menu;
 mod moving_block;
-mod vector_collisions;
 
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use bevy_kira_audio::prelude::*;
 use death::DeathPlugin;
 use main_menu::MenuPlugin;
@@ -22,10 +22,10 @@ use win::WinPlugin;
 
 const SPRITE_SCALE: f32 = 0.707106;
 const FELLA_SPRITE_SIZE: Vec2 = Vec2::new(64.0 * SPRITE_SCALE, 64.0 * SPRITE_SCALE);
-const GRAVITY_CONSTANT: f32 = -2000.0;
-const MAP_SCALE: f32 = 80.0;
+const GRAVITY_CONSTANT: Vec2 = Vec2::new(0.0, -980.0);
 const PLAYER_JUMP_VELOCITY: f32 = 800.0;
-const PLAYER_RUN_SPEED: f32 = 400.0;
+const PLAYER_RUN_SPEED: f32 = 300.0;
+const MAP_SCALE: f32 = 80.0;
 
 pub fn level_directory(level_number: u8) -> String {
     format!("assets/levels/level-{}.txt", level_number)
@@ -44,6 +44,8 @@ fn main() {
     App::new()
         .add_state(GameState::Menu)
         .insert_resource(Msaa { samples: 4 })
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        // .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {
                 width: 1080.0,

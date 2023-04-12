@@ -1,6 +1,7 @@
 use bevy_kira_audio::{prelude::*, Audio};
 use bevy::prelude::*;
-use crate::{GameState, player::{player_movement, Player}};
+use bevy_rapier2d::prelude::RapierConfiguration;
+use crate::{GameState, player::{rapier_player_movement, Player}};
 
 #[derive(Resource)]
 pub struct GameTextures {
@@ -23,7 +24,7 @@ impl Plugin for StartupPlugin {
             .add_startup_system_to_stage(StartupStage::PreStartup, pre_startup)
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
-                    .with_system(camera_follow_player.after(player_movement))
+                    .with_system(camera_follow_player.after(rapier_player_movement))
             )
             .add_system_set(
                 SystemSet::on_exit(GameState::Gameplay)
@@ -37,7 +38,12 @@ impl Plugin for StartupPlugin {
     }
 }
 
-fn pre_startup(mut commands: Commands, asset_server: Res<AssetServer>, audio: Res<Audio>) {
+fn pre_startup(
+    mut commands: Commands, 
+    asset_server: Res<AssetServer>, 
+    audio: Res<Audio>,
+    mut rapier_config: ResMut<RapierConfiguration>,
+) {
     commands.insert_resource(GameTextures {
         player: asset_server.load("images/fella.png"),
         r_to_respawn: asset_server.load("death-messages/respawn.png"),
@@ -50,6 +56,8 @@ fn pre_startup(mut commands: Commands, asset_server: Res<AssetServer>, audio: Re
     let music = asset_server.load("music/new_bossa.wav");
     audio.play(music).looped().with_volume(0.2);
     audio.pause();
+
+    rapier_config.gravity = Vec2::ZERO;
 }
 
 fn setup(mut commands: Commands) {

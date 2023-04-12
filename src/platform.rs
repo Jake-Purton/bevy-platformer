@@ -1,10 +1,11 @@
-use crate::{moving_block::MovableWall, PLAYER_RUN_SPEED, PLAYER_JUMP_VELOCITY};
+use crate::{moving_block::MovableWall, PLAYER_RUN_SPEED, PLAYER_JUMP_VELOCITY, FELLA_SPRITE_SIZE};
 use std::{fs::File, io::Read};
-
+use bevy_rapier2d::prelude::*;
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
+
 use crate::{
-    player::Player, FELLA_SPRITE_SIZE, MAP_SCALE, SPRITE_SCALE, GameState, startup_plugin::GameTextures, CurrentLevel, level_directory,
+    player::Player, MAP_SCALE, GameState, startup_plugin::GameTextures, CurrentLevel, level_directory,
 };
 
 #[derive(Component)]
@@ -43,20 +44,11 @@ macro_rules! create_wall {
                     custom_size: Some($size),
                     ..default()
                 },
-                transform: Transform {
-                    translation: Vec3 {
-                        x: $x,
-                        y: $y,
-                        z: 10.0,
-                    },
-                    ..default()
-                },
                 ..Default::default()
             })
-            .insert(Wall {
-                size: $size,
-                killer: false,
-            });
+            .insert(RigidBody::Fixed)
+            .insert(TransformBundle::from(Transform::from_xyz($x, $y, 10.0)))
+            .insert(Collider::cuboid($size.x / 2.0, $size.y / 2.0));
     }};
 }
 
@@ -187,9 +179,8 @@ fn platform_from_map_system(
                 commands
                     .spawn(SpriteBundle {
                         texture: game_textures.player.clone(),
-                        transform: Transform {
-                            translation: Vec3::new(x, y, 20.0),
-                            scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 0.0),
+                        sprite: Sprite {
+                            custom_size: Some(FELLA_SPRITE_SIZE),
                             ..Default::default()
                         },
                         ..Default::default()
@@ -198,9 +189,13 @@ fn platform_from_map_system(
                         run_speed: PLAYER_RUN_SPEED,
                         velocity: Vec2 { x: 0.0, y: 0.0 },
                         jump_velocity: PLAYER_JUMP_VELOCITY,
-                        can_jump: true,
                         size: FELLA_SPRITE_SIZE,
-                    });
+                    })
+                    .insert(Collider::cuboid(FELLA_SPRITE_SIZE.x / 2.0, FELLA_SPRITE_SIZE.y / 2.0 ))
+                    .insert(KinematicCharacterController::default())
+                    .insert(KinematicCharacterControllerOutput::default())
+                    .insert(TransformBundle::from(Transform::from_xyz(x, y, 10.0)));
+
             } else if *val == 4 {
                 create_killer_wall!(
                     commands,
