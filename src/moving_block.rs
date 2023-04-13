@@ -81,7 +81,7 @@ fn moving_wall(
                     pos.y - (window.height() / 2.0) + camera.translation.y,
                     block_transform.translation.z,
                 );
-                let velocity = Vec2::new(pos.x - block_transform.translation.x, pos.y - block_transform.translation.y);
+                let velocity = (pos - block_transform.translation).truncate();
                 vel.linvel = (velocity + vel.linvel) * 0.8;
             }   
         } else {

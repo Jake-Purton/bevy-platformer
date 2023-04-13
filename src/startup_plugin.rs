@@ -90,7 +90,7 @@ fn camera_follow_player(
     let (camera, mut vel) = camera.single_mut();
     let player = player.single();
 
-    let velocity = Vec2::new(player.translation.x - camera.translation.x, player.translation.y - camera.translation.y) * 2.0;
+    let velocity = (player.translation - camera.translation).truncate() * 2.0;
     vel.linvel = (velocity + vel.linvel) * 0.7;
 
 }

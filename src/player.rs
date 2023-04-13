@@ -39,6 +39,11 @@ pub fn rapier_player_movement (
         let delta_s = time.delta_seconds();
         let mut movement = Vec2::new(0.0, 0.0);
 
+        // make sure it hits the ceiling
+        if output.effective_translation.y.is_sign_positive() && (output.effective_translation.y * 10.0).round() == 0.0 {
+            player.velocity.y = 0.0;
+        }
+
         if keys.pressed(KeyCode::D) {
             movement += Vec2::new(player.run_speed, 0.0);
         }        
