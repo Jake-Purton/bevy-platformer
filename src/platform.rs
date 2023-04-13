@@ -195,7 +195,7 @@ fn platform_from_map_system(
                         ..Default::default()
                     })
                     .insert(Player {
-                        run_speed: 800.0,
+                        run_speed: 600.0,
                         velocity: Vec2 { x: 0.0, y: 0.0 },
                         jump_velocity: 1000.0,
                         can_jump: true,

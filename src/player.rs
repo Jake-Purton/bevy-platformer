@@ -1,6 +1,5 @@
 use ::bevy::prelude::*;
 
-
 use crate::{
     collision::{velocity_collision, VelocityCollision, BetterCollision},
     platform::{Wall, LowestPoint},
