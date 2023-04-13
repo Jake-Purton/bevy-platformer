@@ -1,6 +1,6 @@
 use bevy_kira_audio::{prelude::*, Audio};
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::RapierConfiguration;
+use bevy_rapier2d::{prelude::{RapierConfiguration, Velocity, RigidBody}};
 use crate::{GameState, player::{rapier_player_movement, Player}, GRAVITY_CONSTANT};
 
 #[derive(Resource)]
@@ -64,8 +64,12 @@ fn setup(mut commands: Commands) {
     commands.insert_resource(ClearColor(Color::rgb(1.0, 0.5, 0.0)));
     commands
         .spawn(Camera2dBundle::default())
-        .insert(PlayerCamera);
-
+        .insert(PlayerCamera)
+        .insert(Velocity {
+            linvel: Vec2::ZERO,
+            ..Default::default()
+        })
+        .insert(RigidBody::Dynamic);
 }
 
 fn toggle_mute (audio: Res<Audio>, keys: Res<Input<KeyCode>>) {
@@ -80,12 +84,15 @@ fn toggle_mute (audio: Res<Audio>, keys: Res<Input<KeyCode>>) {
 }
 
 fn camera_follow_player(
-    mut camera: Query<&mut Transform, (With<PlayerCamera>, Without<Player>)>,
+    mut camera: Query<(&Transform, &mut Velocity), (With<PlayerCamera>, Without<Player>)>,
     player: Query<&Transform, With<Player>>,
 ) {
-    let mut camera = camera.single_mut();
+    let (camera, mut vel) = camera.single_mut();
     let player = player.single();
-    (camera.translation.x, camera.translation.y) = (player.translation.x, player.translation.y);
+
+    let velocity = Vec2::new(player.translation.x - camera.translation.x, player.translation.y - camera.translation.y) * 2.0;
+    vel.linvel = (velocity + vel.linvel) * 0.7;
+
 }
 
 pub fn despawn_everything(query: Query<Entity>, mut commands: Commands) {

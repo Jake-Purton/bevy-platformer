@@ -60,7 +60,7 @@ pub fn rapier_player_movement (
         let y = player.velocity.y;
         let xy = Vec2::new(x, y);
 
-        controller.translation = Some((movement) * delta_s + xy * delta_s);
+        controller.translation = Some((movement + xy) * delta_s);
     }
 }
 
