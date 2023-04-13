@@ -47,30 +47,21 @@ pub fn rapier_player_movement (
             movement += Vec2::new(-player.run_speed, 0.0);
         }        
 
-        if keys.pressed(KeyCode::Space) && output.grounded {
-            player.velocity.y = player.jump_velocity;
-        }
-
         if !output.grounded {
             player.velocity += GRAVITY_CONSTANT * delta_s;
+        } else {
+            if keys.pressed(KeyCode::Space) {
+                player.velocity.y = player.jump_velocity;
+            } else {
+                player.velocity.y = 0.0;
+            }
         }
 
-        let mut x = player.velocity.x * delta_s;
-        let mut y = player.velocity.y * delta_s;
-
-        if player.velocity.x.abs() - x.abs() <= 0.0 {
-            x = player.velocity.x
-        }
-
-        if player.velocity.y.abs() - y.abs() <= 0.0 {
-            y = player.velocity.y
-        }
-
+        let x = player.velocity.x;
+        let y = player.velocity.y;
         let xy = Vec2::new(x, y);
 
-        player.velocity -= xy;
-
-        controller.translation = Some((movement) * delta_s + xy);
+        controller.translation = Some((movement) * delta_s + xy * delta_s);
     }
 }
 

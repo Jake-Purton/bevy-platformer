@@ -199,7 +199,17 @@ fn platform_from_map_system(
                         size: FELLA_SPRITE_SIZE,
                     })
                     .insert(Collider::cuboid(FELLA_SPRITE_SIZE.x / 2.0, FELLA_SPRITE_SIZE.y / 2.0 ))
-                    .insert(KinematicCharacterController::default())
+                    .insert(KinematicCharacterController {
+                        autostep: Some(CharacterAutostep {
+                            max_height: CharacterLength::Absolute(0.5),
+                            min_width: CharacterLength::Absolute(0.2),
+                            include_dynamic_bodies: true,
+                        }),
+                        apply_impulse_to_dynamic_bodies: true,
+                        snap_to_ground: Some(CharacterLength::Absolute(0.1)),
+                        custom_mass: Some(1000.0),
+                        ..Default::default()
+                    })
                     .insert(KinematicCharacterControllerOutput::default())
                     .insert(TransformBundle::from(Transform::from_xyz(x, y, 10.0)));
 
