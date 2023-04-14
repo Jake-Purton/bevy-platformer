@@ -1,7 +1,7 @@
 use bevy_kira_audio::{prelude::*, Audio};
 use bevy::prelude::*;
 use bevy_rapier2d::{prelude::{RapierConfiguration, Velocity, RigidBody}};
-use crate::{GameState, player::{rapier_player_movement, Player}, GRAVITY_CONSTANT};
+use crate::{GameState, player::{rapier_player_movement, Player}, GRAVITY_CONSTANT, moving_block::MovableWall};
 
 #[derive(Resource)]
 pub struct GameTextures {
@@ -25,6 +25,7 @@ impl Plugin for StartupPlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(camera_follow_player.after(rapier_player_movement))
+                    .with_system(spinny_cube)
             )
             .add_system_set(
                 SystemSet::on_exit(GameState::Gameplay)
@@ -102,4 +103,16 @@ pub fn despawn_everything(query: Query<Entity>, mut commands: Commands) {
     }
 }
 
+fn spinny_cube (
+    mut cubes: Query<(&Velocity, &mut Sprite), With<MovableWall>>,
+) {
 
+    for (vel, mut cube) in cubes.iter_mut() {
+        if vel.angvel.abs() > 1.0 {
+
+            let x = vel.angvel / vel.angvel.abs();
+            cube.color += Color::rgba(0.02 *  x, -0.02 * x, 0.01 * x, 0.0);
+
+        }
+    }
+}

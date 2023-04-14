@@ -21,7 +21,7 @@ use win::WinPlugin;
 
 const SPRITE_SCALE: f32 = 0.707106;
 const FELLA_SPRITE_SIZE: Vec2 = Vec2::new(64.0 * SPRITE_SCALE, 64.0 * SPRITE_SCALE);
-const GRAVITY_CONSTANT: Vec2 = Vec2::new(0.0, -980.0);
+const GRAVITY_CONSTANT: Vec2 = Vec2::new(0.0, -1200.0);
 const PLAYER_JUMP_VELOCITY: f32 = 800.0;
 const PLAYER_RUN_SPEED: f32 = 300.0;
 const MAP_SCALE: f32 = 80.0;
@@ -55,7 +55,7 @@ fn main() {
             },
             ..default()
         }))
-        .insert_resource(CurrentLevel {level_number: 0})
+        .insert_resource(CurrentLevel {level_number: 4})
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)
