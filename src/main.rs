@@ -6,6 +6,7 @@ mod next_level;
 mod win;
 mod main_menu;
 mod moving_block;
+mod grappling_hook;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -25,6 +26,8 @@ const GRAVITY_CONSTANT: Vec2 = Vec2::new(0.0, -1200.0);
 const PLAYER_JUMP_VELOCITY: f32 = 800.0;
 const PLAYER_RUN_SPEED: f32 = 300.0;
 const MAP_SCALE: f32 = 80.0;
+
+// Thinking about adding a grappling hook
 
 pub fn level_directory(level_number: u8) -> String {
     format!("assets/levels/level-{}.txt", level_number)
