@@ -23,6 +23,7 @@ use win::WinPlugin;
 
 const SPRITE_SCALE: f32 = 0.707106;
 const HOOK_SPRITE_SIZE: Vec2 = Vec2::new(24.0, 24.0);
+const HOOK_SPEED: f32 = 1000.0;
 const FELLA_SPRITE_SIZE: Vec2 = Vec2::new(64.0 * SPRITE_SCALE, 64.0 * SPRITE_SCALE);
 const GRAVITY_CONSTANT: Vec2 = Vec2::new(0.0, -1200.0);
 const PLAYER_JUMP_VELOCITY: f32 = 800.0;

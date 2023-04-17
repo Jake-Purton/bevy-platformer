@@ -5,7 +5,7 @@
 // on right click
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
-use crate::{startup_plugin::{PlayerCamera, GameTextures}, player::Player, GameState, HOOK_SPRITE_SIZE, platform::Wall};
+use crate::{startup_plugin::{PlayerCamera, GameTextures}, player::Player, GameState, HOOK_SPRITE_SIZE, platform::Wall, HOOK_SPEED};
 
 pub struct GrapplePlugin;
 
@@ -15,16 +15,22 @@ impl Plugin for GrapplePlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(send_out_hook)
-                    .with_system(hook_sensor)
+                    .with_system(hook_sensor.after(hook_movement))
+                    .with_system(hook_movement)
+                    .with_system(player_movement_by_hook)
             );
     }
 }
 
 #[derive(Component)]
-pub struct GrappleHook {
+pub struct MovingGrappleHook {
     direction: Vec2,
     size: Vec2,
+    timer: Timer,
 }
+
+#[derive(Component)]
+pub struct Hook;
 
 // sends out a hitbox to act as the hook
 fn send_out_hook (
@@ -50,7 +56,7 @@ fn send_out_hook (
 
             direction /= direction.length();
 
-            let angle = (direction.y / direction.x).tan();
+            let angle = Vec2::Y.angle_between(direction);
 
             commands
                 .spawn(SpriteBundle {
@@ -66,20 +72,23 @@ fn send_out_hook (
                     },
                     ..Default::default()
                 })
-                .insert(GrappleHook {
+                .insert(MovingGrappleHook {
                     direction,
                     size: HOOK_SPRITE_SIZE,
-                });
+                    timer: Timer::from_seconds(0.7, TimerMode::Once)
+                })
+                .insert(Hook);
         }
     }
 }
 
 fn hook_sensor (
-    hooks: Query<(&GrappleHook, &Transform)>,
-    walls: Query<(&Wall, &Transform)>
+    hooks: Query<(Entity, &MovingGrappleHook, &Transform)>,
+    walls: Query<(&Wall, &Transform)>,
+    mut commands: Commands,
 ) {
 
-    for (hook, hook_transform) in hooks.iter() {
+    for (entity, hook, hook_transform) in hooks.iter() {
 
         for (wall, wall_transform) in walls.iter() {
 
@@ -90,9 +99,34 @@ fn hook_sensor (
                 wall.size
             ).is_some() {
 
-                println!("hook collision")
+                commands.entity(entity).remove::<MovingGrappleHook>();
 
             }
         }
     }
+}
+
+fn hook_movement (
+    mut hooks: Query<(Entity, &mut MovingGrappleHook, &mut Transform)>,
+    time: Res<Time>,
+    mut commands: Commands,
+) {
+
+    for (entity, mut hook, mut transform)in hooks.iter_mut() {
+
+        hook.timer.tick(time.delta());
+
+        if hook.timer.just_finished() {
+
+            commands.entity(entity).despawn();
+
+        } else {
+
+            transform.translation += (HOOK_SPEED * hook.direction * time.delta_seconds()).extend(0.0);
+
+        }
+
+
+    }
+    
 }
