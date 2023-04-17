@@ -3,9 +3,9 @@
 // - the player is brought towards the object 
 // - the object is brought towards the player
 // on right click
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::collide_aabb::collide};
 
-use crate::{startup_plugin::PlayerCamera, player::Player, GameState};
+use crate::{startup_plugin::{PlayerCamera, GameTextures}, player::Player, GameState, HOOK_SPRITE_SIZE, platform::Wall};
 
 pub struct GrapplePlugin;
 
@@ -15,6 +15,7 @@ impl Plugin for GrapplePlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(send_out_hook)
+                    .with_system(hook_sensor)
             );
     }
 }
@@ -22,6 +23,7 @@ impl Plugin for GrapplePlugin {
 #[derive(Component)]
 pub struct GrappleHook {
     direction: Vec2,
+    size: Vec2,
 }
 
 // sends out a hitbox to act as the hook
@@ -31,6 +33,7 @@ fn send_out_hook (
     mut commands: Commands,
     camera: Query<&Transform, With<PlayerCamera>>,
     player: Query<&Transform, With<Player>>,
+    game_textures: Res<GameTextures>,
 ) {
     if mouse.just_pressed(MouseButton::Right) {
 
@@ -47,10 +50,49 @@ fn send_out_hook (
 
             direction /= direction.length();
 
-            // commands.spawn(bundle)
+            let angle = (direction.y / direction.x).tan();
 
+            commands
+                .spawn(SpriteBundle {
+                    texture: game_textures.hook.clone(),
+                    sprite: Sprite {
+                        custom_size: Some(HOOK_SPRITE_SIZE),
+                        ..Default::default()
+                    },
+                    transform: Transform {
+                        translation: player.translation + (20.0 * direction).extend(11.0),
+                        rotation: Quat::from_rotation_z(angle),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(GrappleHook {
+                    direction,
+                    size: HOOK_SPRITE_SIZE,
+                });
         }
     }
 }
 
-// direction * velocity * delta_s
+fn hook_sensor (
+    hooks: Query<(&GrappleHook, &Transform)>,
+    walls: Query<(&Wall, &Transform)>
+) {
+
+    for (hook, hook_transform) in hooks.iter() {
+
+        for (wall, wall_transform) in walls.iter() {
+
+            if collide(
+                hook_transform.translation, 
+                hook.size, 
+                wall_transform.translation, 
+                wall.size
+            ).is_some() {
+
+                println!("hook collision")
+
+            }
+        }
+    }
+}

@@ -14,6 +14,11 @@ pub struct KillerWall {
 }
 
 #[derive(Component)]
+pub struct Wall {
+    pub size: Vec2
+}
+
+#[derive(Component)]
 pub struct Goal {
     size: Vec2
 }
@@ -47,7 +52,10 @@ macro_rules! create_wall {
             })
             .insert(RigidBody::Fixed)
             .insert(TransformBundle::from(Transform::from_xyz($x, $y, 10.0)))
-            .insert(Collider::cuboid($size.x / 2.0, $size.y / 2.0));
+            .insert(Collider::cuboid($size.x / 2.0, $size.y / 2.0))
+            .insert(Wall {
+                size: $size
+            });
     }};
 }
 

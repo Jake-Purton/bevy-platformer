@@ -8,7 +8,7 @@ mod main_menu;
 mod moving_block;
 mod grappling_hook;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::texture::ImageSampler};
 use bevy_rapier2d::prelude::*;
 use bevy_kira_audio::prelude::*;
 use death::DeathPlugin;
@@ -22,13 +22,12 @@ use startup_plugin::StartupPlugin;
 use win::WinPlugin;
 
 const SPRITE_SCALE: f32 = 0.707106;
+const HOOK_SPRITE_SIZE: Vec2 = Vec2::new(24.0, 24.0);
 const FELLA_SPRITE_SIZE: Vec2 = Vec2::new(64.0 * SPRITE_SCALE, 64.0 * SPRITE_SCALE);
 const GRAVITY_CONSTANT: Vec2 = Vec2::new(0.0, -1200.0);
 const PLAYER_JUMP_VELOCITY: f32 = 800.0;
 const PLAYER_RUN_SPEED: f32 = 300.0;
 const MAP_SCALE: f32 = 80.0;
-
-// Thinking about adding a grappling hook
 
 pub fn level_directory(level_number: u8) -> String {
     format!("assets/levels/level-{}.txt", level_number)
@@ -48,16 +47,19 @@ fn main() {
         .add_state(GameState::Menu)
         .insert_resource(Msaa { samples: 4 })
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-        // .add_plugin(RapierDebugRenderPlugin::default())
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
-                width: 1080.0,
-                height: 720.0,
-                title: "To do".to_string(),
-                resizable: true,
-                ..Default::default()
-            },
-            ..default()
+        .add_plugins(DefaultPlugins
+            .set(WindowPlugin {
+                window: WindowDescriptor {
+                    width: 1080.0,
+                    height: 720.0,
+                    title: "To do".to_string(),
+                    resizable: true,
+                    ..Default::default()
+                },
+                ..default()
+            })
+            .set(ImagePlugin {
+                default_sampler: ImageSampler::nearest_descriptor(),
         }))
         .insert_resource(CurrentLevel {level_number: 4})
         .add_plugin(GrapplePlugin)
@@ -70,6 +72,7 @@ fn main() {
         .add_plugin(WinPlugin)
         .add_plugin(MenuPlugin)
         .add_plugin(MovingBlockPlugin)
+        // .add_plugin(RapierDebugRenderPlugin::default())
         .run();
 }
 
