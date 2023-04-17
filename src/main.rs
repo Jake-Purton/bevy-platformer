@@ -12,6 +12,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_kira_audio::prelude::*;
 use death::DeathPlugin;
+use grappling_hook::GrapplePlugin;
 use main_menu::MenuPlugin;
 use moving_block::MovingBlockPlugin;
 use next_level::NextLevelPlugin;
@@ -59,6 +60,7 @@ fn main() {
             ..default()
         }))
         .insert_resource(CurrentLevel {level_number: 4})
+        .add_plugin(GrapplePlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(AudioPlugin)
