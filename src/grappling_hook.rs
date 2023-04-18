@@ -17,7 +17,7 @@ impl Plugin for GrapplePlugin {
                     .with_system(send_out_hook)
                     .with_system(hook_sensor.after(hook_movement))
                     .with_system(hook_movement)
-                    .with_system(player_movement_by_hook)
+                    .with_system(delete_hooks)
             );
     }
 }
@@ -40,44 +40,49 @@ fn send_out_hook (
     camera: Query<&Transform, With<PlayerCamera>>,
     player: Query<&Transform, With<Player>>,
     game_textures: Res<GameTextures>,
+    hooks: Query<&Hook>,
 ) {
     if mouse.just_pressed(MouseButton::Right) {
 
-        let window = windows.get_primary().unwrap();
-        let camera = camera.single();
+        if hooks.is_empty() {
 
-        if let Some(mut position) = window.cursor_position() {
-            position.x -= (window.width() / 2.0) - camera.translation.x;
-            position.y -= (window.height() / 2.0) - camera.translation.y;
-
-            let player = player.single();
-
-            let mut direction = position - player.translation.truncate();
-
-            direction /= direction.length();
-
-            let angle = Vec2::Y.angle_between(direction);
-
-            commands
-                .spawn(SpriteBundle {
-                    texture: game_textures.hook.clone(),
-                    sprite: Sprite {
-                        custom_size: Some(HOOK_SPRITE_SIZE),
+            let window = windows.get_primary().unwrap();
+            let camera = camera.single();
+    
+            if let Some(mut position) = window.cursor_position() {
+                position.x -= (window.width() / 2.0) - camera.translation.x;
+                position.y -= (window.height() / 2.0) - camera.translation.y;
+    
+                let player = player.single();
+    
+                let mut direction = position - player.translation.truncate();
+    
+                direction /= direction.length();
+    
+                let angle = Vec2::Y.angle_between(direction);
+    
+                commands
+                    .spawn(SpriteBundle {
+                        texture: game_textures.hook.clone(),
+                        sprite: Sprite {
+                            custom_size: Some(HOOK_SPRITE_SIZE),
+                            ..Default::default()
+                        },
+                        transform: Transform {
+                            translation: player.translation + (20.0 * direction).extend(11.0),
+                            rotation: Quat::from_rotation_z(angle),
+                            ..Default::default()
+                        },
                         ..Default::default()
-                    },
-                    transform: Transform {
-                        translation: player.translation + (20.0 * direction).extend(11.0),
-                        rotation: Quat::from_rotation_z(angle),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .insert(MovingGrappleHook {
-                    direction,
-                    size: HOOK_SPRITE_SIZE,
-                    timer: Timer::from_seconds(0.7, TimerMode::Once)
-                })
-                .insert(Hook);
+                    })
+                    .insert(MovingGrappleHook {
+                        direction,
+                        size: HOOK_SPRITE_SIZE,
+                        timer: Timer::from_seconds(0.7, TimerMode::Once)
+                    })
+                    .insert(Hook);
+            
+            }
         }
     }
 }
@@ -129,4 +134,16 @@ fn hook_movement (
 
     }
     
+}
+
+fn delete_hooks (
+    grappling_hook: Query<Entity, (Without<MovingGrappleHook>, With<Hook>)>,
+    mut commands: Commands,
+    keys: Res<Input<KeyCode>>
+) {
+    if keys.just_pressed(KeyCode::Space) {
+        for hook in grappling_hook.iter() {
+            commands.entity(hook).despawn()
+        }
+    }
 }

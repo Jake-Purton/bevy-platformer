@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::{KinematicCharacterController, KinematicCharacterCon
 
 use crate::{
     platform::{LowestPoint, KillerWall},
-    GRAVITY_CONSTANT, GameState,
+    GRAVITY_CONSTANT, GameState, grappling_hook::{Hook, MovingGrappleHook},
 };
 
 pub struct PlayerPlugin;
@@ -33,39 +33,47 @@ pub fn rapier_player_movement (
     mut controllers: Query<(&mut KinematicCharacterController, &mut Player, &KinematicCharacterControllerOutput)>,
     keys: Res<Input<KeyCode>>,
     time: Res<Time>,
+    grappling_hook: Query<(&Hook, &Transform), Without<MovingGrappleHook>>,
 ) {
     for (mut controller, mut player, output) in controllers.iter_mut() {
 
-        let delta_s = time.delta_seconds();
-        let mut movement = Vec2::new(0.0, 0.0);
+        if grappling_hook.is_empty() {
 
-        // make sure it hits the ceiling
-        if output.effective_translation.y.is_sign_positive() && (output.effective_translation.y * 10.0).round() == 0.0 {
-            player.velocity.y = 0.0;
-        }
-
-        if keys.pressed(KeyCode::D) {
-            movement += Vec2::new(player.run_speed, 0.0);
-        }        
-        if keys.pressed(KeyCode::A) {
-            movement += Vec2::new(-player.run_speed, 0.0);
-        }        
-
-        if !output.grounded {
-            player.velocity += GRAVITY_CONSTANT * delta_s;
-        } else {
-            if keys.pressed(KeyCode::Space) {
-                player.velocity.y = player.jump_velocity;
-            } else {
+            let delta_s = time.delta_seconds();
+            let mut movement = Vec2::new(0.0, 0.0);
+    
+            // make sure it hits the ceiling
+            if output.effective_translation.y.is_sign_positive() && (output.effective_translation.y * 10.0).round() == 0.0 {
                 player.velocity.y = 0.0;
             }
+    
+            if keys.pressed(KeyCode::D) {
+                movement += Vec2::new(player.run_speed, 0.0);
+            }        
+            if keys.pressed(KeyCode::A) {
+                movement += Vec2::new(-player.run_speed, 0.0);
+            }        
+    
+            if !output.grounded {
+                player.velocity += GRAVITY_CONSTANT * delta_s;
+            } else {
+                if keys.pressed(KeyCode::Space) {
+                    player.velocity.y = player.jump_velocity;
+                } else {
+                    player.velocity.y = 0.0;
+                }
+            }
+    
+            controller.translation = Some((movement + player.velocity) * delta_s);
+
+        } else {
+
+            let (hook, transform) = grappling_hook.single();
+
+            
+
         }
 
-        let x = player.velocity.x;
-        let y = player.velocity.y;
-        let xy = Vec2::new(x, y);
-
-        controller.translation = Some((movement + xy) * delta_s);
     }
 }
 
