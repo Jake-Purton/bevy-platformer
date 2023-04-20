@@ -62,7 +62,7 @@ fn main() {
             .set(ImagePlugin {
                 default_sampler: ImageSampler::nearest_descriptor(),
         }))
-        .insert_resource(CurrentLevel {level_number: 4})
+        .insert_resource(CurrentLevel {level_number: 1})
         .add_plugin(GrapplePlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(PlatformPlugin)
