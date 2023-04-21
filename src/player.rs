@@ -48,6 +48,12 @@ pub fn rapier_player_movement (
 
         let mut movement = Vec2::new(0.0, 0.0);
 
+        if player.velocity.x.is_nan() {
+            player.velocity.x = 0.0;
+        } 
+        if player.velocity.y.is_nan() {
+            player.velocity.y = 0.0;
+        }
 
         // make sure it hits the ceiling
         if output.effective_translation.y.is_sign_positive() && (output.effective_translation.y * 10.0).round() == 0.0 {
@@ -80,21 +86,26 @@ pub fn rapier_player_movement (
 
             controller.translation = Some(movement * delta_s);
 
+            if keys.just_pressed(KeyCode::F) {
+                println!("velocity: {}, movement: {} ", player.velocity, movement);
+            }
+
         } else {
 
             let (_, hook_transform) = grappling_hook.single();
 
-            // find hook direction, angle of velocity to hook normal, resolve forces each frame?
-
-            let direction = (hook_transform.translation - player_transform.translation).truncate();
+            let /*mut*/ direction = (hook_transform.translation - player_transform.translation).truncate();
+            // direction /= direction.distance(Vec2::ZERO);
             let resolved = resolve_forces(direction, movement);
-            // let resolved = resolve_forces(direction, player.velocity);
+            let resolved_velocity = resolve_forces(direction, player.velocity);
 
             movement = resolved; 
-            player.velocity = resolved;
+            player.velocity = resolved_velocity;
             controller.translation = Some(movement * delta_s);
 
         }
+
+
 
     }
 }
