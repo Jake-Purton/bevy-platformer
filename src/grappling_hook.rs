@@ -6,6 +6,7 @@
 use bevy::{prelude::*, sprite::collide_aabb::collide};
 
 use crate::{startup_plugin::{PlayerCamera, GameTextures}, player::Player, GameState, HOOK_SPRITE_SIZE, platform::Wall, HOOK_SPEED};
+// use crate::moving_block::MovableWall;
 
 pub struct GrapplePlugin;
 
@@ -17,7 +18,7 @@ impl Plugin for GrapplePlugin {
                     .with_system(send_out_hook)
                     .with_system(hook_sensor.after(hook_movement))
                     .with_system(hook_movement)
-                    .with_system(delete_hooks)
+                    .with_system(delete_and_rotate_hooks)
             );
     }
 }
@@ -90,6 +91,7 @@ fn send_out_hook (
 fn hook_sensor (
     hooks: Query<(Entity, &MovingGrappleHook, &Transform)>,
     walls: Query<(&Wall, &Transform)>,
+    // platforms: Query<(&MovableWall, &Transform), Without<Wall>>,
     mut commands: Commands,
 ) {
 
@@ -108,6 +110,21 @@ fn hook_sensor (
 
             }
         }
+
+        // for (wall, wall_transform) in platforms.iter() {
+
+        //     if collide(
+        //         hook_transform.translation, 
+        //         hook.size, 
+        //         wall_transform.translation, 
+        //         wall.size
+        //     ).is_some() {
+
+        //         commands.entity(entity).remove::<MovingGrappleHook>();
+
+        //     }
+        // }
+        
     }
 }
 
@@ -136,14 +153,23 @@ fn hook_movement (
     
 }
 
-fn delete_hooks (
-    grappling_hook: Query<Entity, (Without<MovingGrappleHook>, With<Hook>)>,
+fn delete_and_rotate_hooks (
+    mut grappling_hook: Query<(Entity, &mut Transform), (Without<MovingGrappleHook>, With<Hook>)>,
+    player: Query<&Transform, (With<Player>, Without<Hook>)>,
     mut commands: Commands,
     keys: Res<Input<KeyCode>>
 ) {
-    if keys.just_pressed(KeyCode::Space) {
-        for hook in grappling_hook.iter() {
+    for (hook, mut hook_t) in grappling_hook.iter_mut() {
+        if keys.just_pressed(KeyCode::Space) {
             commands.entity(hook).despawn()
+        } else {
+
+            let transform = player.single();
+            let direction = hook_t.translation - transform.translation;
+            let angle = Vec2::Y.angle_between(direction.truncate());
+
+            hook_t.rotation = Quat::from_rotation_z(angle);
+
         }
     }
 }

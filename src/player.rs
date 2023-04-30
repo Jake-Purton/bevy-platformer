@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::{KinematicCharacterController, KinematicCharacterCon
 
 use crate::{
     platform::{LowestPoint, KillerWall},
-    GRAVITY_CONSTANT, GameState, grappling_hook::{Hook, MovingGrappleHook},
+    GRAVITY_CONSTANT, GameState, grappling_hook::{Hook, MovingGrappleHook}, GRAPPLE_SPEED,
 };
 
 pub struct PlayerPlugin;
@@ -94,12 +94,17 @@ pub fn rapier_player_movement (
 
             let (_, hook_transform) = grappling_hook.single();
 
-            let /*mut*/ direction = (hook_transform.translation - player_transform.translation).truncate();
-            // direction /= direction.distance(Vec2::ZERO);
+            let mut direction = (hook_transform.translation - player_transform.translation).truncate();
             let resolved = resolve_forces(direction, movement);
             let resolved_velocity = resolve_forces(direction, player.velocity);
+            
+            movement = resolved;
 
-            movement = resolved; 
+            if keys.pressed(KeyCode::W) {
+                direction /= direction.distance(Vec2::ZERO);
+                movement += direction * GRAPPLE_SPEED;
+            }
+
             player.velocity = resolved_velocity;
             controller.translation = Some(movement * delta_s);
 
