@@ -44,6 +44,17 @@ pub enum GameState {
 }
 
 fn main() {
+
+    println!("Usage: run with \"server\" or \"client\" argument");
+    let args: Vec<String> = std::env::args().collect();
+
+    let exec_type = &args[1];
+    let is_host = match exec_type.as_str() {
+        "client" => false,
+        "server" => true,
+        _ => panic!("Invalid argument, must be \"client\" or \"server\"."),
+    };
+
     App::new()
         .add_state(GameState::Menu)
         .insert_resource(Msaa { samples: 4 })
